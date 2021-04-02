@@ -6,7 +6,7 @@ import { client } from '../apollo/client'
 import {
   ALL_PAIRS,
   ALL_TOKENS,
-  ETH_PRICE,
+  CELO_PRICE,
   GLOBAL_CHART,
   GLOBAL_DATA,
   GLOBAL_TXNS,
@@ -25,8 +25,8 @@ import { useTokenChartDataCombined, useTokenDataCombined } from './TokenData'
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'
-const UPDATE_ETH_PRICE = 'UPDATE_ETH_PRICE'
-const ETH_PRICE_KEY = 'ETH_PRICE_KEY'
+const UPDATE_CELO_PRICE = 'UPDATE_CELO_PRICE'
+const CELO_PRICE_KEY = 'CELO_PRICE_KEY'
 const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UBESWAPTE_TOP_PAIRS'
 const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
@@ -75,10 +75,10 @@ function reducer(state, { type, payload }) {
         },
       }
     }
-    case UPDATE_ETH_PRICE: {
+    case UPDATE_CELO_PRICE: {
       const { ethPrice, oneDayPrice, ethPriceChange } = payload
       return {
-        [ETH_PRICE_KEY]: ethPrice,
+        [CELO_PRICE_KEY]: ethPrice,
         oneDayPrice,
         ethPriceChange,
       }
@@ -145,7 +145,7 @@ export default function Provider({ children }) {
 
   const updateEthPrice = useCallback((ethPrice, oneDayPrice, ethPriceChange) => {
     dispatch({
-      type: UPDATE_ETH_PRICE,
+      type: UPDATE_CELO_PRICE,
       payload: {
         ethPrice,
         oneDayPrice,
@@ -247,32 +247,32 @@ async function getGlobalData(ethPrice, oldEthPrice, offsetVolume) {
       query: GLOBAL_DATA(),
       fetchPolicy: 'cache-first',
     })
-    data = result.data.uniswapFactories[0]
+    data = result.data.ubeswapFactories[0]
 
     // fetch the historical data
     let oneDayResult = await client.query({
       query: GLOBAL_DATA(oneDayBlock?.number),
       fetchPolicy: 'cache-first',
     })
-    oneDayData = oneDayResult.data.uniswapFactories[0]
+    oneDayData = oneDayResult.data.ubeswapFactories[0]
 
     let twoDayResult = await client.query({
       query: GLOBAL_DATA(twoDayBlock?.number),
       fetchPolicy: 'cache-first',
     })
-    twoDayData = twoDayResult.data.uniswapFactories[0]
+    twoDayData = twoDayResult.data.ubeswapFactories[0]
 
     let oneWeekResult = await client.query({
       query: GLOBAL_DATA(oneWeekBlock?.number),
       fetchPolicy: 'cache-first',
     })
-    const oneWeekData = oneWeekResult.data.uniswapFactories[0]
+    const oneWeekData = oneWeekResult.data.ubeswapFactories[0]
 
     let twoWeekResult = await client.query({
       query: GLOBAL_DATA(twoWeekBlock?.number),
       fetchPolicy: 'cache-first',
     })
-    const twoWeekData = twoWeekResult.data.uniswapFactories[0]
+    const twoWeekData = twoWeekResult.data.ubeswapFactories[0]
 
     if (data && oneDayData && twoDayData && twoWeekData) {
       let [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
@@ -341,8 +341,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
         fetchPolicy: 'cache-first',
       })
       skip += 1000
-      data = data.concat(result.data.uniswapDayDatas)
-      if (result.data.uniswapDayDatas.length < 1000) {
+      data = data.concat(result.data.ubeswapDayDatas)
+      if (result.data.ubeswapDayDatas.length < 1000) {
         allFound = true
       }
     }
@@ -476,11 +476,11 @@ const getEthPrice = async () => {
   try {
     let oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     let result = await client.query({
-      query: ETH_PRICE(),
+      query: CELO_PRICE(),
       fetchPolicy: 'cache-first',
     })
     let resultOneDay = await client.query({
-      query: ETH_PRICE(oneDayBlock),
+      query: CELO_PRICE(oneDayBlock),
       fetchPolicy: 'cache-first',
     })
     const currentPrice = result?.data?.bundles[0]?.ethPrice
@@ -499,7 +499,7 @@ const PAIRS_TO_FETCH = 500
 const TOKENS_TO_FETCH = 500
 
 /**
- * Loop through every pair on uniswap, used for search
+ * Loop through every pair on ubeswap, used for search
  */
 async function getAllPairsOnUbeswap() {
   try {
@@ -527,7 +527,7 @@ async function getAllPairsOnUbeswap() {
 }
 
 /**
- * Loop through every token on uniswap, used for search
+ * Loop through every token on ubeswap, used for search
  */
 async function getAllTokensOnUbeswap() {
   try {
@@ -645,7 +645,7 @@ export function useGlobalTransactions() {
 
 export function useEthPrice() {
   const [state, { updateEthPrice }] = useGlobalDataContext()
-  const ethPrice = state?.[ETH_PRICE_KEY]
+  const ethPrice = state?.[CELO_PRICE_KEY]
   const ethPriceOld = state?.['oneDayPrice']
   useEffect(() => {
     async function checkForEthPrice() {

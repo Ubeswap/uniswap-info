@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useState, useEffect } from 'react'
-import { timeframeOptions, SUPPORTED_LIST_URLS__NO_ENS } from '../constants'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import getTokenList from '../utils/tokenLists'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { healthClient } from '../apollo/client'
 import { SUBGRAPH_HEALTH } from '../apollo/queries'
+import { SUPPORTED_LIST_URLS__NO_ENS, timeframeOptions } from '../constants'
+import getTokenList from '../utils/tokenLists'
 dayjs.extend(utc)
 
 const UPDATE = 'UPDATE'
@@ -179,8 +179,8 @@ export function useLatestBlocks() {
           query: SUBGRAPH_HEALTH,
         })
         .then((res) => {
-          const syncedBlock = res.data.indexingStatusForCurrentVersion.chains[0].latestBlock.number
-          const headBlock = res.data.indexingStatusForCurrentVersion.chains[0].chainHeadBlock.number
+          const syncedBlock = res.data.indexingStatusForCurrentVersion?.chains[0].latestBlock.number
+          const headBlock = res.data.indexingStatusForCurrentVersion?.chains[0].chainHeadBlock.number
           if (syncedBlock && headBlock) {
             updateLatestBlock(syncedBlock)
             updateHeadBlock(headBlock)
