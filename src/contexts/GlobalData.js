@@ -1,25 +1,25 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from 'react'
-import { client } from '../apollo/client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { useTimeframe } from './Application'
+import weekOfYear from 'dayjs/plugin/weekOfYear'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+import { client } from '../apollo/client'
 import {
-  getPercentChange,
-  getBlockFromTimestamp,
-  getBlocksFromTimestamps,
-  get2DayPercentChange,
-  getTimeframe,
-} from '../utils'
-import {
-  GLOBAL_DATA,
-  GLOBAL_TXNS,
-  GLOBAL_CHART,
-  ETH_PRICE,
   ALL_PAIRS,
   ALL_TOKENS,
+  ETH_PRICE,
+  GLOBAL_CHART,
+  GLOBAL_DATA,
+  GLOBAL_TXNS,
   TOP_LPS_PER_PAIRS,
 } from '../apollo/queries'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
+import {
+  get2DayPercentChange,
+  getBlockFromTimestamp,
+  getBlocksFromTimestamps,
+  getPercentChange,
+  getTimeframe,
+} from '../utils'
+import { useTimeframe } from './Application'
 import { useAllPairData } from './PairData'
 import { useTokenChartDataCombined, useTokenDataCombined } from './TokenData'
 const UPDATE = 'UPDATE'
@@ -27,8 +27,8 @@ const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'
 const UPDATE_ETH_PRICE = 'UPDATE_ETH_PRICE'
 const ETH_PRICE_KEY = 'ETH_PRICE_KEY'
-const UPDATE_ALL_PAIRS_IN_UNISWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UNISWAPTE_TOP_PAIRS'
-const UPDATE_ALL_TOKENS_IN_UNISWAP = 'UPDATE_ALL_TOKENS_IN_UNISWAP'
+const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UBESWAPTE_TOP_PAIRS'
+const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 
 const offsetVolumes = [
@@ -84,7 +84,7 @@ function reducer(state, { type, payload }) {
       }
     }
 
-    case UPDATE_ALL_PAIRS_IN_UNISWAP: {
+    case UPDATE_ALL_PAIRS_IN_UBESWAP: {
       const { allPairs } = payload
       return {
         ...state,
@@ -92,7 +92,7 @@ function reducer(state, { type, payload }) {
       }
     }
 
-    case UPDATE_ALL_TOKENS_IN_UNISWAP: {
+    case UPDATE_ALL_TOKENS_IN_UBESWAP: {
       const { allTokens } = payload
       return {
         ...state,
@@ -154,18 +154,18 @@ export default function Provider({ children }) {
     })
   }, [])
 
-  const updateAllPairsInUniswap = useCallback((allPairs) => {
+  const updateAllPairsInUbeswap = useCallback((allPairs) => {
     dispatch({
-      type: UPDATE_ALL_PAIRS_IN_UNISWAP,
+      type: UPDATE_ALL_PAIRS_IN_UBESWAP,
       payload: {
         allPairs,
       },
     })
   }, [])
 
-  const updateAllTokensInUniswap = useCallback((allTokens) => {
+  const updateAllTokensInUbeswap = useCallback((allTokens) => {
     dispatch({
-      type: UPDATE_ALL_TOKENS_IN_UNISWAP,
+      type: UPDATE_ALL_TOKENS_IN_UBESWAP,
       payload: {
         allTokens,
       },
@@ -191,8 +191,8 @@ export default function Provider({ children }) {
             updateChart,
             updateEthPrice,
             updateTopLps,
-            updateAllPairsInUniswap,
-            updateAllTokensInUniswap,
+            updateAllPairsInUbeswap,
+            updateAllTokensInUbeswap,
           },
         ],
         [
@@ -202,8 +202,8 @@ export default function Provider({ children }) {
           updateTopLps,
           updateChart,
           updateEthPrice,
-          updateAllPairsInUniswap,
-          updateAllTokensInUniswap,
+          updateAllPairsInUbeswap,
+          updateAllTokensInUbeswap,
         ]
       )}
     >
@@ -501,7 +501,7 @@ const TOKENS_TO_FETCH = 500
 /**
  * Loop through every pair on uniswap, used for search
  */
-async function getAllPairsOnUniswap() {
+async function getAllPairsOnUbeswap() {
   try {
     let allFound = false
     let pairs = []
@@ -529,7 +529,7 @@ async function getAllPairsOnUniswap() {
 /**
  * Loop through every token on uniswap, used for search
  */
-async function getAllTokensOnUniswap() {
+async function getAllTokensOnUbeswap() {
   try {
     let allFound = false
     let skipCount = 0
@@ -558,7 +558,7 @@ async function getAllTokensOnUniswap() {
  * Hook that fetches overview data, plus all tokens and pairs for search
  */
 export function useGlobalData() {
-  const [state, { update, updateAllPairsInUniswap, updateAllTokensInUniswap }] = useGlobalDataContext()
+  const [state, { update, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
   const [ethPrice, oldEthPrice] = useEthPrice()
 
   const data = state?.globalData
@@ -571,16 +571,16 @@ export function useGlobalData() {
 
       globalData && update(globalData)
 
-      let allPairs = await getAllPairsOnUniswap()
-      updateAllPairsInUniswap(allPairs)
+      let allPairs = await getAllPairsOnUbeswap()
+      updateAllPairsInUbeswap(allPairs)
 
-      let allTokens = await getAllTokensOnUniswap()
-      updateAllTokensInUniswap(allTokens)
+      let allTokens = await getAllTokensOnUbeswap()
+      updateAllTokensInUbeswap(allTokens)
     }
     if (!data && ethPrice && oldEthPrice && combinedVolume) {
       fetchData()
     }
-  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUniswap, updateAllTokensInUniswap, combinedVolume])
+  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap, combinedVolume])
 
   return data || {}
 }
@@ -660,14 +660,14 @@ export function useEthPrice() {
   return [ethPrice, ethPriceOld]
 }
 
-export function useAllPairsInUniswap() {
+export function useAllPairsInUbeswap() {
   const [state] = useGlobalDataContext()
   let allPairs = state?.allPairs
 
   return allPairs || []
 }
 
-export function useAllTokensInUniswap() {
+export function useAllTokensInUbeswap() {
   const [state] = useGlobalDataContext()
   let allTokens = state?.allTokens
 
