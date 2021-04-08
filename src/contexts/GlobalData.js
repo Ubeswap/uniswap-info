@@ -21,22 +21,22 @@ import {
 } from '../utils'
 import { useTimeframe } from './Application'
 import { useAllPairData } from './PairData'
-import { useTokenChartDataCombined, useTokenDataCombined } from './TokenData'
+import { useTokenChartDataCombined } from './TokenData'
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'
 const UPDATE_CELO_PRICE = 'UPDATE_CELO_PRICE'
 const CELO_PRICE_KEY = 'CELO_PRICE_KEY'
-const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDAUPDATE_ALL_PAIRS_IN_UBESWAPTE_TOP_PAIRS'
+const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDATE_TOP_PAIRS'
 const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 
 const offsetVolumes = [
-  '0x9ea3b5b4ec044b70375236a281986106457b20ef',
-  '0x05934eba98486693aaec2d00b0e9ce918e37dc3f',
-  '0x3d7e683fc9c86b4d653c9e47ca12517440fad14e',
-  '0xfae9c647ad7d89e738aba720acf09af93dc535f7',
-  '0x7296368fe9bcb25d3ecc19af13655b907818cc09',
+  // '0x9ea3b5b4ec044b70375236a281986106457b20ef',
+  // '0x05934eba98486693aaec2d00b0e9ce918e37dc3f',
+  // '0x3d7e683fc9c86b4d653c9e47ca12517440fad14e',
+  // '0xfae9c647ad7d89e738aba720acf09af93dc535f7',
+  // '0x7296368fe9bcb25d3ecc19af13655b907818cc09',
 ]
 
 // format dayjs with the libraries that we need
@@ -76,11 +76,11 @@ function reducer(state, { type, payload }) {
       }
     }
     case UPDATE_CELO_PRICE: {
-      const { ethPrice, oneDayPrice, ethPriceChange } = payload
+      const { celoPrice, oneDayPrice, celoPriceChange } = payload
       return {
-        [CELO_PRICE_KEY]: ethPrice,
+        [CELO_PRICE_KEY]: celoPrice,
         oneDayPrice,
-        ethPriceChange,
+        celoPriceChange,
       }
     }
 
@@ -116,6 +116,7 @@ function reducer(state, { type, payload }) {
 export default function Provider({ children }) {
   const [state, dispatch] = useReducer(reducer, {})
   const update = useCallback((data) => {
+    console.log('do update', data)
     dispatch({
       type: UPDATE,
       payload: {
@@ -143,13 +144,13 @@ export default function Provider({ children }) {
     })
   }, [])
 
-  const updateEthPrice = useCallback((ethPrice, oneDayPrice, ethPriceChange) => {
+  const updateCeloPrice = useCallback((celoPrice, oneDayPrice, celoPriceChange) => {
     dispatch({
       type: UPDATE_CELO_PRICE,
       payload: {
-        ethPrice,
+        celoPrice,
         oneDayPrice,
-        ethPriceChange,
+        celoPriceChange,
       },
     })
   }, [])
@@ -189,7 +190,7 @@ export default function Provider({ children }) {
             update,
             updateTransactions,
             updateChart,
-            updateEthPrice,
+            updateCeloPrice,
             updateTopLps,
             updateAllPairsInUbeswap,
             updateAllTokensInUbeswap,
@@ -201,7 +202,7 @@ export default function Provider({ children }) {
           updateTransactions,
           updateTopLps,
           updateChart,
-          updateEthPrice,
+          updateCeloPrice,
           updateAllPairsInUbeswap,
           updateAllTokensInUbeswap,
         ]
@@ -216,11 +217,11 @@ export default function Provider({ children }) {
  * Gets all the global data for the overview page.
  * Needs current eth price and the old eth price to get
  * 24 hour USD changes.
- * @param {*} ethPrice
- * @param {*} oldEthPrice
+ * @param {*} celoPrice
+ * @param {*} oldCeloPrice
  */
 
-async function getGlobalData(ethPrice, oldEthPrice, offsetVolume) {
+async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
   // data for each day , historic data used for % changes
   let data = {}
   let oneDayData = {}
@@ -294,10 +295,10 @@ async function getGlobalData(ethPrice, oldEthPrice, offsetVolume) {
       )
 
       // format the total liquidity in USD
-      data.totalLiquidityUSD = data.totalLiquidityETH * ethPrice
+      data.totalLiquidityUSD = data.totalLiquidityETH * celoPrice
       const liquidityChangeUSD = getPercentChange(
-        data.totalLiquidityETH * ethPrice,
-        oneDayData.totalLiquidityETH * oldEthPrice
+        data.totalLiquidityETH * celoPrice,
+        oneDayData.totalLiquidityETH * oldCeloPrice
       )
 
       // add relevant fields with the calculated amounts
@@ -465,12 +466,12 @@ const getGlobalTransactions = async () => {
 /**
  * Gets the current price  of ETH, 24 hour price, and % change between them
  */
-const getEthPrice = async () => {
+const getCeloPrice = async () => {
   const utcCurrentTime = dayjs()
   const utcOneDayBack = utcCurrentTime.subtract(1, 'day').startOf('minute').unix()
 
-  let ethPrice = 0
-  let ethPriceOneDay = 0
+  let celoPrice = 0
+  let celoPriceOneDay = 0
   let priceChangeETH = 0
 
   try {
@@ -479,20 +480,22 @@ const getEthPrice = async () => {
       query: CELO_PRICE(),
       fetchPolicy: 'cache-first',
     })
-    let resultOneDay = await client.query({
-      query: CELO_PRICE(oneDayBlock),
-      fetchPolicy: 'cache-first',
-    })
-    const currentPrice = result?.data?.bundles[0]?.ethPrice
-    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.ethPrice
+    let resultOneDay = oneDayBlock
+      ? await client.query({
+          query: CELO_PRICE(oneDayBlock),
+          fetchPolicy: 'cache-first',
+        })
+      : null
+    const currentPrice = result?.data?.bundles[0]?.celoPrice
+    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? currentPrice
     priceChangeETH = getPercentChange(currentPrice, oneDayBackPrice)
-    ethPrice = currentPrice
-    ethPriceOneDay = oneDayBackPrice
+    celoPrice = currentPrice
+    celoPriceOneDay = oneDayBackPrice
   } catch (e) {
     console.log(e)
   }
 
-  return [ethPrice, ethPriceOneDay, priceChangeETH]
+  return [celoPrice, celoPriceOneDay, priceChangeETH]
 }
 
 const PAIRS_TO_FETCH = 500
@@ -559,15 +562,13 @@ async function getAllTokensOnUbeswap() {
  */
 export function useGlobalData() {
   const [state, { update, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
-  const [ethPrice, oldEthPrice] = useEthPrice()
+  const [celoPrice, oldCeloPrice] = useCeloPrice()
 
   const data = state?.globalData
 
-  const combinedVolume = useTokenDataCombined(offsetVolumes)
-
   useEffect(() => {
     async function fetchData() {
-      let globalData = await getGlobalData(ethPrice, oldEthPrice, combinedVolume)
+      let globalData = await getGlobalData(celoPrice, oldCeloPrice)
 
       globalData && update(globalData)
 
@@ -577,10 +578,10 @@ export function useGlobalData() {
       let allTokens = await getAllTokensOnUbeswap()
       updateAllTokensInUbeswap(allTokens)
     }
-    if (!data && ethPrice && oldEthPrice && combinedVolume) {
+    if (!data && celoPrice) {
       fetchData()
     }
-  }, [ethPrice, oldEthPrice, update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap, combinedVolume])
+  }, [celoPrice, oldCeloPrice, update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
 
   return data || {}
 }
@@ -643,21 +644,21 @@ export function useGlobalTransactions() {
   return transactions
 }
 
-export function useEthPrice() {
-  const [state, { updateEthPrice }] = useGlobalDataContext()
-  const ethPrice = state?.[CELO_PRICE_KEY]
-  const ethPriceOld = state?.['oneDayPrice']
+export function useCeloPrice() {
+  const [state, { updateCeloPrice }] = useGlobalDataContext()
+  const celoPrice = state?.[CELO_PRICE_KEY]
+  const celoPriceOld = state?.['oneDayPrice']
   useEffect(() => {
-    async function checkForEthPrice() {
-      if (!ethPrice) {
-        let [newPrice, oneDayPrice, priceChange] = await getEthPrice()
-        updateEthPrice(newPrice, oneDayPrice, priceChange)
+    async function checkForCeloPrice() {
+      if (!celoPrice) {
+        let [newPrice, oneDayPrice, priceChange] = await getCeloPrice()
+        updateCeloPrice(newPrice, oneDayPrice, priceChange)
       }
     }
-    checkForEthPrice()
-  }, [ethPrice, updateEthPrice])
+    checkForCeloPrice()
+  }, [celoPrice, updateCeloPrice])
 
-  return [ethPrice, ethPriceOld]
+  return [celoPrice, celoPriceOld]
 }
 
 export function useAllPairsInUbeswap() {

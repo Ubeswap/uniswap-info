@@ -1,24 +1,23 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { ApolloProvider } from 'react-apollo'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import styled from 'styled-components'
 import { client } from './apollo/client'
-import { Route, Switch, BrowserRouter, Redirect } from 'react-router-dom'
-import GlobalPage from './pages/GlobalPage'
-import TokenPage from './pages/TokenPage'
-import PairPage from './pages/PairPage'
-import { useGlobalData, useGlobalChartData } from './contexts/GlobalData'
-import { isAddress } from './utils'
-import AccountPage from './pages/AccountPage'
-import AllTokensPage from './pages/AllTokensPage'
-import AllPairsPage from './pages/AllPairsPage'
-import PinnedData from './components/PinnedData'
-
-import SideNav from './components/SideNav'
-import AccountLookup from './pages/AccountLookup'
-import LocalLoader from './components/LocalLoader'
-import { useLatestBlocks } from './contexts/Application'
 import GoogleAnalyticsReporter from './components/analytics/GoogleAnalyticsReporter'
+import LocalLoader from './components/LocalLoader'
+import PinnedData from './components/PinnedData'
+import SideNav from './components/SideNav'
 import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from './constants'
+import { useLatestBlocks } from './contexts/Application'
+import { useGlobalChartData } from './contexts/GlobalData'
+import AccountLookup from './pages/AccountLookup'
+import AccountPage from './pages/AccountPage'
+import AllPairsPage from './pages/AllPairsPage'
+import AllTokensPage from './pages/AllTokensPage'
+import GlobalPage from './pages/GlobalPage'
+import PairPage from './pages/PairPage'
+import TokenPage from './pages/TokenPage'
+import { isAddress } from './utils'
 
 const AppWrapper = styled.div`
   position: relative;
@@ -98,7 +97,8 @@ const BLOCK_DIFFERENCE_THRESHOLD = 30
 function App() {
   const [savedOpen, setSavedOpen] = useState(false)
 
-  const globalData = useGlobalData()
+  // TODO(igm): add when historical blocks are fixed
+  // const globalData = useGlobalData()
   const globalChartData = useGlobalChartData()
   const [latestBlock, headBlock] = useLatestBlocks()
 
@@ -115,98 +115,99 @@ function App() {
             </WarningBanner>
           </WarningWrapper>
         )}
-        {globalData &&
-        Object.keys(globalData).length > 0 &&
-        globalChartData &&
-        Object.keys(globalChartData).length > 0 ? (
-          <BrowserRouter>
-            <Route component={GoogleAnalyticsReporter} />
-            <Switch>
-              <Route
-                exacts
-                strict
-                path="/token/:tokenAddress"
-                render={({ match }) => {
-                  if (
-                    isAddress(match.params.tokenAddress.toLowerCase()) &&
-                    !Object.keys(TOKEN_BLACKLIST).includes(match.params.tokenAddress.toLowerCase())
-                  ) {
-                    return (
-                      <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <TokenPage address={match.params.tokenAddress.toLowerCase()} />
-                      </LayoutWrapper>
-                    )
-                  } else {
-                    return <Redirect to="/home" />
-                  }
-                }}
-              />
-              <Route
-                exacts
-                strict
-                path="/pair/:pairAddress"
-                render={({ match }) => {
-                  if (
-                    isAddress(match.params.pairAddress.toLowerCase()) &&
-                    !Object.keys(PAIR_BLACKLIST).includes(match.params.pairAddress.toLowerCase())
-                  ) {
-                    return (
-                      <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <PairPage pairAddress={match.params.pairAddress.toLowerCase()} />
-                      </LayoutWrapper>
-                    )
-                  } else {
-                    return <Redirect to="/home" />
-                  }
-                }}
-              />
-              <Route
-                exacts
-                strict
-                path="/account/:accountAddress"
-                render={({ match }) => {
-                  if (isAddress(match.params.accountAddress.toLowerCase())) {
-                    return (
-                      <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <AccountPage account={match.params.accountAddress.toLowerCase()} />
-                      </LayoutWrapper>
-                    )
-                  } else {
-                    return <Redirect to="/home" />
-                  }
-                }}
-              />
+        {
+          /* globalData &&
+           Object.keys(globalData).length > 0 && */
+          globalChartData && Object.keys(globalChartData).length > 0 ? (
+            <BrowserRouter>
+              <Route component={GoogleAnalyticsReporter} />
+              <Switch>
+                <Route
+                  exacts
+                  strict
+                  path="/token/:tokenAddress"
+                  render={({ match }) => {
+                    if (
+                      isAddress(match.params.tokenAddress.toLowerCase()) &&
+                      !Object.keys(TOKEN_BLACKLIST).includes(match.params.tokenAddress.toLowerCase())
+                    ) {
+                      return (
+                        <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                          <TokenPage address={match.params.tokenAddress.toLowerCase()} />
+                        </LayoutWrapper>
+                      )
+                    } else {
+                      return <Redirect to="/home" />
+                    }
+                  }}
+                />
+                <Route
+                  exacts
+                  strict
+                  path="/pair/:pairAddress"
+                  render={({ match }) => {
+                    if (
+                      isAddress(match.params.pairAddress.toLowerCase()) &&
+                      !Object.keys(PAIR_BLACKLIST).includes(match.params.pairAddress.toLowerCase())
+                    ) {
+                      return (
+                        <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                          <PairPage pairAddress={match.params.pairAddress.toLowerCase()} />
+                        </LayoutWrapper>
+                      )
+                    } else {
+                      return <Redirect to="/home" />
+                    }
+                  }}
+                />
+                <Route
+                  exacts
+                  strict
+                  path="/account/:accountAddress"
+                  render={({ match }) => {
+                    if (isAddress(match.params.accountAddress.toLowerCase())) {
+                      return (
+                        <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                          <AccountPage account={match.params.accountAddress.toLowerCase()} />
+                        </LayoutWrapper>
+                      )
+                    } else {
+                      return <Redirect to="/home" />
+                    }
+                  }}
+                />
 
-              <Route path="/home">
-                <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <GlobalPage />
-                </LayoutWrapper>
-              </Route>
+                <Route path="/home">
+                  <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                    <GlobalPage />
+                  </LayoutWrapper>
+                </Route>
 
-              <Route path="/tokens">
-                <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <AllTokensPage />
-                </LayoutWrapper>
-              </Route>
+                <Route path="/tokens">
+                  <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                    <AllTokensPage />
+                  </LayoutWrapper>
+                </Route>
 
-              <Route path="/pairs">
-                <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <AllPairsPage />
-                </LayoutWrapper>
-              </Route>
+                <Route path="/pairs">
+                  <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                    <AllPairsPage />
+                  </LayoutWrapper>
+                </Route>
 
-              <Route path="/accounts">
-                <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <AccountLookup />
-                </LayoutWrapper>
-              </Route>
+                <Route path="/accounts">
+                  <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
+                    <AccountLookup />
+                  </LayoutWrapper>
+                </Route>
 
-              <Redirect to="/home" />
-            </Switch>
-          </BrowserRouter>
-        ) : (
-          <LocalLoader fill="true" />
-        )}
+                <Redirect to="/home" />
+              </Switch>
+            </BrowserRouter>
+          ) : (
+            <LocalLoader fill="true" />
+          )
+        }
       </AppWrapper>
     </ApolloProvider>
   )

@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react'
-import { useMedia } from 'react-use'
 import dayjs from 'dayjs'
-import LocalLoader from '../LocalLoader'
 import utc from 'dayjs/plugin/utc'
+import React, { useEffect, useState } from 'react'
+import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
-import Link, { CustomLink } from '../Link'
 import { Divider } from '../../components'
-import DoubleTokenLogo from '../DoubleLogo'
-import { withRouter } from 'react-router-dom'
-import { formattedNum, getPoolLink } from '../../utils'
-import { AutoColumn } from '../Column'
-import { useEthPrice } from '../../contexts/GlobalData'
-import { RowFixed } from '../Row'
-import { ButtonLight } from '../ButtonStyled'
+import { useCeloPrice } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
+import { formattedNum, getPoolLink } from '../../utils'
+import { ButtonLight } from '../ButtonStyled'
+import { AutoColumn } from '../Column'
+import DoubleTokenLogo from '../DoubleLogo'
 import FormattedName from '../FormattedName'
+import Link, { CustomLink } from '../Link'
+import LocalLoader from '../LocalLoader'
+import { RowFixed } from '../Row'
 
 dayjs.extend(utc)
 
@@ -135,7 +135,7 @@ function PositionList({ positions }) {
     }
   }, [positions])
 
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
 
   const ListItem = ({ position, index }) => {
     const poolOwnership = position.liquidityTokenBalance / position.pair.totalSupply
@@ -214,7 +214,7 @@ function PositionList({ positions }) {
                   <TYPE.small fontWeight={400}>
                     {parseFloat(position.pair.token0.derivedETH)
                       ? formattedNum(
-                          position?.fees.sum / (parseFloat(position.pair.token0.derivedETH) * ethPrice) / 2,
+                          position?.fees.sum / (parseFloat(position.pair.token0.derivedETH) * celoPrice) / 2,
                           false,
                           true
                         )
@@ -231,7 +231,7 @@ function PositionList({ positions }) {
                   <TYPE.small fontWeight={400}>
                     {parseFloat(position.pair.token1.derivedETH)
                       ? formattedNum(
-                          position?.fees.sum / (parseFloat(position.pair.token1.derivedETH) * ethPrice) / 2,
+                          position?.fees.sum / (parseFloat(position.pair.token1.derivedETH) * celoPrice) / 2,
                           false,
                           true
                         )

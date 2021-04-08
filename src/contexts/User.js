@@ -6,7 +6,7 @@ import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS } f
 import { timeframeOptions } from '../constants'
 import { getHistoricalPairReturns, getLPReturnsOnPair } from '../utils/returns'
 import { useStartTimestamp, useTimeframe } from './Application'
-import { useEthPrice } from './GlobalData'
+import { useCeloPrice } from './GlobalData'
 import { usePairData } from './PairData'
 
 dayjs.extend(utc)
@@ -252,7 +252,7 @@ export function useUserPositionChart(position, account) {
 
   // get data needed for calculations
   const currentPairData = usePairData(pairAddress)
-  const [currentETHPrice] = useEthPrice()
+  const [currentETHPrice] = useCeloPrice()
 
   // formatetd array to return for chart data
   const formattedHistory = state?.[account]?.[USER_PAIR_RETURNS_KEY]?.[pairAddress]
@@ -442,7 +442,7 @@ export function useUserPositions(account) {
   const positions = state?.[account]?.[POSITIONS_KEY]
 
   const snapshots = useUserSnapshots(account)
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
 
   useEffect(() => {
     async function fetchData(account) {
@@ -457,7 +457,7 @@ export function useUserPositions(account) {
         if (result?.data?.liquidityPositions) {
           let formattedPositions = await Promise.all(
             result?.data?.liquidityPositions.map(async (positionData) => {
-              const returnData = await getLPReturnsOnPair(account, positionData.pair, ethPrice, snapshots)
+              const returnData = await getLPReturnsOnPair(account, positionData.pair, celoPrice, snapshots)
               return {
                 ...positionData,
                 ...returnData,
@@ -470,10 +470,10 @@ export function useUserPositions(account) {
         console.log(e)
       }
     }
-    if (!positions && account && ethPrice && snapshots) {
+    if (!positions && account && celoPrice && snapshots) {
       fetchData(account)
     }
-  }, [account, positions, updatePositions, ethPrice, snapshots])
+  }, [account, positions, updatePositions, celoPrice, snapshots])
 
   return positions
 }

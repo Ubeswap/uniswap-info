@@ -3,12 +3,13 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _Decimal from 'decimal.js-light'
 import { ethers } from 'ethers'
+import gql from 'graphql-tag'
 import Numeral from 'numeral'
 import React from 'react'
 import { Text } from 'rebass'
 import toFormat from 'toformat'
 import { blockClient, client } from '../apollo/client'
-import { GET_BLOCK, GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
+import { GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 
 // format libraries
@@ -149,15 +150,31 @@ export async function splitQuery(query, localClient, vars, list, skipCount = 100
  * @param {Int} timestamp in seconds
  */
 export async function getBlockFromTimestamp(timestamp) {
-  let result = await blockClient.query({
-    query: GET_BLOCK,
-    variables: {
-      timestampFrom: timestamp,
-      timestampTo: timestamp + 600,
-    },
+  // let result = await blockClient.query({
+  //   query: GET_BLOCK,
+  //   variables: {
+  //     timestampFrom: timestamp,
+  //     timestampTo: timestamp + 600,
+  //   },
+  //   fetchPolicy: 'cache-first',
+  // })
+
+  let result = await client.query({
+    query: gql`
+      query LatestBlock {
+        _meta {
+          block {
+            number
+          }
+        }
+      }
+    `,
     fetchPolicy: 'cache-first',
   })
-  return result?.data?.blocks?.[0]?.number
+
+  const now = new Date().getTime() / 1000
+  const estimated = result?.data?._meta?.block?.number - Math.floor((now - timestamp) / 5)
+  return result?.data?.blocks?.[0]?.number ?? estimated
 }
 
 /**
@@ -171,6 +188,23 @@ export async function getBlocksFromTimestamps(timestamps, skipCount = 500) {
   if (timestamps?.length === 0) {
     return []
   }
+
+  const now = new Date().getTime() / 1000
+  let result = await client.query({
+    query: gql`
+      query LatestBlockMany {
+        _meta {
+          block {
+            number
+          }
+        }
+      }
+    `,
+    fetchPolicy: 'cache-first',
+  })
+  return timestamps.map((ts) => {
+    return result?.data?._meta?.block?.number - Math.floor((now - ts) / 5)
+  })
 
   let fetchedData = await splitQuery(GET_BLOCKS, blockClient, [], timestamps, skipCount)
 
@@ -247,7 +281,7 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
         token0DerivedETH: result.data[row].token0.derivedETH,
         token1DerivedETH: result.data[row].token1.derivedETH,
         roiUsd: values && values[0] ? sharePriceUsd / values[0]['sharePriceUsd'] : 1,
-        ethPrice: 0,
+        celoPrice: 0,
         token0PriceUSD: 0,
         token1PriceUSD: 0,
       })
@@ -259,9 +293,9 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
   for (var brow in result?.data) {
     let timestamp = brow.split('b')[1]
     if (timestamp) {
-      values[index].ethPrice = result.data[brow].ethPrice
-      values[index].token0PriceUSD = result.data[brow].ethPrice * values[index].token0DerivedETH
-      values[index].token1PriceUSD = result.data[brow].ethPrice * values[index].token1DerivedETH
+      values[index].celoPrice = result.data[brow].celoPrice
+      values[index].token0PriceUSD = result.data[brow].celoPrice * values[index].token0DerivedETH
+      values[index].token1PriceUSD = result.data[brow].celoPrice * values[index].token1DerivedETH
       index += 1
     }
   }

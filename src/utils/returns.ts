@@ -1,7 +1,7 @@
-import { USER_MINTS_BUNRS_PER_PAIR } from '../apollo/queries'
-import { client } from '../apollo/client'
 import dayjs from 'dayjs'
 import { getShareValueOverTime } from '.'
+import { client } from '../apollo/client'
+import { USER_MINTS_BUNRS_PER_PAIR } from '../apollo/queries'
 
 export const priceOverrides = [
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
@@ -253,9 +253,9 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
  * For a given pair and user, get the return metrics
  * @param user
  * @param pair
- * @param ethPrice
+ * @param celoPrice
  */
-export async function getLPReturnsOnPair(user: string, pair, ethPrice: number, snapshots) {
+export async function getLPReturnsOnPair(user: string, pair, celoPrice: number, snapshots) {
   // initialize values
   const principal = await getPrincipalForUserPerPair(user, pair.id)
   let hodlReturn = 0
@@ -275,8 +275,8 @@ export async function getLPReturnsOnPair(user: string, pair, ethPrice: number, s
     reserve0: pair.reserve0,
     reserve1: pair.reserve1,
     reserveUSD: pair.reserveUSD,
-    token0PriceUSD: pair.token0.derivedETH * ethPrice,
-    token1PriceUSD: pair.token1.derivedETH * ethPrice,
+    token0PriceUSD: pair.token0.derivedETH * celoPrice,
+    token1PriceUSD: pair.token1.derivedETH * celoPrice,
   }
 
   for (const index in snapshots) {

@@ -1,32 +1,28 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react'
-
-import { client } from '../apollo/client'
-import {
-  TOKEN_DATA,
-  FILTERED_TRANSACTIONS,
-  TOKEN_CHART,
-  TOKENS_CURRENT,
-  TOKENS_DYNAMIC,
-  PRICES_BY_BLOCK,
-  PAIR_DATA,
-} from '../apollo/queries'
-
-import { useEthPrice } from './GlobalData'
-
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
+import { client } from '../apollo/client'
+import {
+  FILTERED_TRANSACTIONS,
+  PAIR_DATA,
+  PRICES_BY_BLOCK,
+  TOKENS_CURRENT,
+  TOKENS_DYNAMIC,
+  TOKEN_CHART,
+  TOKEN_DATA,
+} from '../apollo/queries'
+import { timeframeOptions } from '../constants'
 import {
   get2DayPercentChange,
-  getPercentChange,
   getBlockFromTimestamp,
-  isAddress,
   getBlocksFromTimestamps,
+  getPercentChange,
+  isAddress,
   splitQuery,
 } from '../utils'
-import { timeframeOptions } from '../constants'
-import { useLatestBlocks } from './Application'
 import { updateNameData } from '../utils/data'
+import { useLatestBlocks } from './Application'
+import { useCeloPrice } from './GlobalData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_TOKEN_TXNS = 'UPDATE_TOKEN_TXNS'
@@ -220,7 +216,7 @@ export default function Provider({ children }) {
   )
 }
 
-const getTopTokens = async (ethPrice, ethPriceOld) => {
+const getTopTokens = async (celoPrice, celoPriceOld) => {
   const utcCurrentTime = dayjs()
   const utcOneDayBack = utcCurrentTime.subtract(1, 'day').unix()
   const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').unix()
@@ -290,17 +286,17 @@ const getTopTokens = async (ethPrice, ethPriceOld) => {
             twoDayHistory?.txCount ?? 0
           )
 
-          const currentLiquidityUSD = data?.totalLiquidity * ethPrice * data?.derivedETH
-          const oldLiquidityUSD = oneDayHistory?.totalLiquidity * ethPriceOld * oneDayHistory?.derivedETH
+          const currentLiquidityUSD = data?.totalLiquidity * celoPrice * data?.derivedETH
+          const oldLiquidityUSD = oneDayHistory?.totalLiquidity * celoPriceOld * oneDayHistory?.derivedETH
 
           // percent changes
           const priceChangeUSD = getPercentChange(
-            data?.derivedETH * ethPrice,
-            oneDayHistory?.derivedETH ? oneDayHistory?.derivedETH * ethPriceOld : 0
+            data?.derivedETH * celoPrice,
+            oneDayHistory?.derivedETH ? oneDayHistory?.derivedETH * celoPriceOld : 0
           )
 
           // set data
-          data.priceUSD = data?.derivedETH * ethPrice
+          data.priceUSD = data?.derivedETH * celoPrice
           data.totalLiquidityUSD = currentLiquidityUSD
           data.oneDayVolumeUSD = parseFloat(oneDayVolumeUSD)
           data.volumeChangeUSD = volumeChangeUSD
@@ -312,7 +308,7 @@ const getTopTokens = async (ethPrice, ethPriceOld) => {
           // new tokens
           if (!oneDayHistory && data) {
             data.oneDayVolumeUSD = data.tradeVolumeUSD
-            data.oneDayVolumeETH = data.tradeVolume * data.derivedETH
+            data.oneDayVolumeETH = data.tradeVolumeUSD * data.derivedETH
             data.oneDayTxns = data.txCount
           }
 
@@ -349,7 +345,7 @@ const getTopTokens = async (ethPrice, ethPriceOld) => {
   }
 }
 
-const getTokenData = async (address, ethPrice, ethPriceOld) => {
+const getTokenData = async (address, celoPrice, celoPriceOld) => {
   const utcCurrentTime = dayjs()
   const utcOneDayBack = utcCurrentTime.subtract(1, 'day').startOf('minute').unix()
   const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').startOf('minute').unix()
@@ -421,15 +417,15 @@ const getTokenData = async (address, ethPrice, ethPriceOld) => {
     )
 
     const priceChangeUSD = getPercentChange(
-      data?.derivedETH * ethPrice,
-      parseFloat(oneDayData?.derivedETH ?? 0) * ethPriceOld
+      data?.derivedETH * celoPrice,
+      parseFloat(oneDayData?.derivedETH ?? 0) * celoPriceOld
     )
 
-    const currentLiquidityUSD = data?.totalLiquidity * ethPrice * data?.derivedETH
-    const oldLiquidityUSD = oneDayData?.totalLiquidity * ethPriceOld * oneDayData?.derivedETH
+    const currentLiquidityUSD = data?.totalLiquidity * celoPrice * data?.derivedETH
+    const oldLiquidityUSD = oneDayData?.totalLiquidity * celoPriceOld * oneDayData?.derivedETH
 
     // set data
-    data.priceUSD = data?.derivedETH * ethPrice
+    data.priceUSD = data?.derivedETH * celoPrice
     data.totalLiquidityUSD = currentLiquidityUSD
     data.oneDayVolumeUSD = oneDayVolumeUSD
     data.volumeChangeUSD = volumeChangeUSD
@@ -448,7 +444,7 @@ const getTokenData = async (address, ethPrice, ethPriceOld) => {
     // new tokens
     if (!oneDayData && data) {
       data.oneDayVolumeUSD = data.tradeVolumeUSD
-      data.oneDayVolumeETH = data.tradeVolume * data.derivedETH
+      data.oneDayVolumeETH = data.tradeVolumeUSD * data.derivedETH
       data.oneDayTxns = data.txCount
     }
 
@@ -559,7 +555,7 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
     for (var brow in result) {
       let timestamp = brow.split('b')[1]
       if (timestamp) {
-        values[index].priceUSD = result[brow].ethPrice * values[index].derivedETH
+        values[index].priceUSD = result[brow].celoPrice * values[index].derivedETH
         index += 1
       }
     }
@@ -653,30 +649,30 @@ const getTokenChartData = async (tokenAddress) => {
 
 export function Updater() {
   const [, { updateTopTokens }] = useTokenDataContext()
-  const [ethPrice, ethPriceOld] = useEthPrice()
+  const [celoPrice, celoPriceOld] = useCeloPrice()
   useEffect(() => {
     async function getData() {
       // get top pairs for overview list
-      let topTokens = await getTopTokens(ethPrice, ethPriceOld)
+      let topTokens = await getTopTokens(celoPrice, celoPriceOld)
       topTokens && updateTopTokens(topTokens)
     }
-    ethPrice && ethPriceOld && getData()
-  }, [ethPrice, ethPriceOld, updateTopTokens])
+    celoPrice && celoPriceOld && getData()
+  }, [celoPrice, celoPriceOld, updateTopTokens])
   return null
 }
 
 export function useTokenData(tokenAddress) {
   const [state, { update }] = useTokenDataContext()
-  const [ethPrice, ethPriceOld] = useEthPrice()
+  const [celoPrice, celoPriceOld] = useCeloPrice()
   const tokenData = state?.[tokenAddress]
 
   useEffect(() => {
-    if (!tokenData && ethPrice && ethPriceOld && isAddress(tokenAddress)) {
-      getTokenData(tokenAddress, ethPrice, ethPriceOld).then((data) => {
+    if (!tokenData && celoPrice && celoPriceOld && isAddress(tokenAddress)) {
+      getTokenData(tokenAddress, celoPrice, celoPriceOld).then((data) => {
         update(tokenAddress, data)
       })
     }
-  }, [ethPrice, ethPriceOld, tokenAddress, tokenData, update])
+  }, [celoPrice, celoPriceOld, tokenAddress, tokenData, update])
 
   return tokenData || {}
 }
@@ -724,7 +720,7 @@ export function useTokenPairs(tokenAddress) {
 
 export function useTokenDataCombined(tokenAddresses) {
   const [state, { updateCombinedVolume }] = useTokenDataContext()
-  const [ethPrice, ethPriceOld] = useEthPrice()
+  const [celoPrice, celoPriceOld] = useCeloPrice()
 
   const volume = state?.combinedVol
 
@@ -732,7 +728,7 @@ export function useTokenDataCombined(tokenAddresses) {
     async function fetchDatas() {
       Promise.all(
         tokenAddresses.map(async (address) => {
-          return await getTokenData(address, ethPrice, ethPriceOld)
+          return await getTokenData(address, celoPrice, celoPriceOld)
         })
       )
         .then((res) => {
@@ -750,10 +746,10 @@ export function useTokenDataCombined(tokenAddresses) {
           console.log('error fetching combined data')
         })
     }
-    if (!volume && ethPrice && ethPriceOld) {
+    if (!volume && celoPrice && celoPriceOld) {
       fetchDatas()
     }
-  }, [tokenAddresses, ethPrice, ethPriceOld, volume, updateCombinedVolume])
+  }, [tokenAddresses, celoPrice, celoPriceOld, volume, updateCombinedVolume])
 
   return volume
 }

@@ -4,21 +4,21 @@ import { HttpLink } from 'apollo-link-http'
 
 export const client = new ApolloClient({
   link: new HttpLink({
-    uri: 'https://api.staging.thegraph.com/subgraphs/name/macalinao/ubeswap2',
+    uri: 'https://api.thegraph.com/subgraphs/name/ubeswap/ubeswap',
   }),
   cache: new InMemoryCache(),
 })
 
 export const healthClient = new ApolloClient({
   link: new HttpLink({
-    uri: 'https://api.staging.thegraph.com/index-node/graphql',
+    uri: 'https://api.thegraph.com/index-node/graphql',
   }),
   cache: new InMemoryCache(),
 })
 
 export const blockClient = new ApolloClient({
   link: new HttpLink({
-    uri: 'https://api.staging.thegraph.com/subgraphs/name/macalinao/blocks-celo',
+    uri: 'https://api.thegraph.com/subgraphs/name/ubeswap/celo-blocks-since-ubeswap',
   }),
   cache: new InMemoryCache(),
 })

@@ -1,32 +1,21 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect, useState } from 'react'
-
-import { client } from '../apollo/client'
-import {
-  PAIR_DATA,
-  PAIR_CHART,
-  FILTERED_TRANSACTIONS,
-  PAIRS_CURRENT,
-  PAIRS_BULK,
-  PAIRS_HISTORICAL_BULK,
-  HOURLY_PAIR_RATES,
-} from '../apollo/queries'
-
-import { useEthPrice } from './GlobalData'
-
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+import { client } from '../apollo/client'
 import {
-  getPercentChange,
-  get2DayPercentChange,
-  isAddress,
-  getBlocksFromTimestamps,
-  getTimestampsForChanges,
-  splitQuery,
-} from '../utils'
+  FILTERED_TRANSACTIONS,
+  HOURLY_PAIR_RATES,
+  PAIRS_BULK,
+  PAIRS_CURRENT,
+  PAIRS_HISTORICAL_BULK,
+  PAIR_CHART,
+  PAIR_DATA,
+} from '../apollo/queries'
 import { timeframeOptions } from '../constants'
-import { useLatestBlocks } from './Application'
+import { get2DayPercentChange, getBlocksFromTimestamps, getPercentChange, isAddress, splitQuery } from '../utils'
 import { updateNameData } from '../utils/data'
+import { useLatestBlocks } from './Application'
+import { useCeloPrice } from './GlobalData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_PAIR_TXNS = 'UPDATE_PAIR_TXNS'
@@ -182,9 +171,10 @@ export default function Provider({ children }) {
   )
 }
 
-async function getBulkPairData(pairList, ethPrice) {
-  const [t1, t2, tWeek] = getTimestampsForChanges()
-  let [{ number: b1 }, { number: b2 }, { number: bWeek }] = await getBlocksFromTimestamps([t1, t2, tWeek])
+async function getBulkPairData(pairList, celoPrice) {
+  // const [t1, t2, tWeek] = getTimestampsForChanges()
+  // let [{ number: b1 }, { number: b2 }, { number: bWeek }] = await getBlocksFromTimestamps([t1, t2, tWeek])
+  const [b1, b2, bWeek] = [0, 0, 0]
 
   try {
     let current = await client.query({
@@ -245,7 +235,7 @@ async function getBulkPairData(pairList, ethPrice) {
             })
             oneWeekHistory = newData.data.pairs[0]
           }
-          data = parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, ethPrice, b1)
+          data = parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, celoPrice, b1)
           return data
         })
     )
@@ -255,7 +245,7 @@ async function getBulkPairData(pairList, ethPrice) {
   }
 }
 
-function parseData(data, oneDayData, twoDayData, oneWeekData, ethPrice, oneDayBlock) {
+function parseData(data, oneDayData, twoDayData, oneWeekData, celoPrice, oneDayBlock) {
   // get volume changes
   const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
     data?.volumeUSD,
@@ -283,7 +273,7 @@ function parseData(data, oneDayData, twoDayData, oneWeekData, ethPrice, oneDayBl
   data.volumeChangeUntracked = volumeChangeUntracked
 
   // set liquidity properties
-  data.trackedReserveUSD = data.trackedReserveETH * ethPrice
+  data.trackedReserveUSD = data.trackedReserveETH * celoPrice
   data.liquidityChangeUSD = getPercentChange(data.reserveUSD, oneDayData?.reserveUSD)
 
   // format if pair hasnt existed for a day or a week
@@ -465,7 +455,7 @@ const getHourlyRateData = async (pairAddress, startTime, latestBlock) => {
 
 export function Updater() {
   const [, { updateTopPairs }] = usePairDataContext()
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
   useEffect(() => {
     async function getData() {
       // get top pairs by reserves
@@ -482,11 +472,11 @@ export function Updater() {
       })
 
       // get data for every pair in list
-      let topPairs = await getBulkPairData(formattedPairs, ethPrice)
+      let topPairs = await getBulkPairData(formattedPairs, celoPrice)
       topPairs && updateTopPairs(topPairs)
     }
-    ethPrice && getData()
-  }, [ethPrice, updateTopPairs])
+    celoPrice && getData()
+  }, [celoPrice, updateTopPairs])
   return null
 }
 
@@ -519,7 +509,7 @@ export function useHourlyRateData(pairAddress, timeWindow) {
  */
 export function useDataForList(pairList) {
   const [state] = usePairDataContext()
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
 
   const [stale, setStale] = useState(false)
   const [fetched, setFetched] = useState([])
@@ -550,15 +540,15 @@ export function useDataForList(pairList) {
         unfetched.map((pair) => {
           return pair
         }),
-        ethPrice
+        celoPrice
       )
       setFetched(newFetched.concat(newPairData))
     }
-    if (ethPrice && pairList && pairList.length > 0 && !fetched && !stale) {
+    if (celoPrice && pairList && pairList.length > 0 && !fetched && !stale) {
       setStale(true)
       fetchNewPairData()
     }
-  }, [ethPrice, state, pairList, stale, fetched])
+  }, [celoPrice, state, pairList, stale, fetched])
 
   let formattedFetch =
     fetched &&
@@ -574,20 +564,20 @@ export function useDataForList(pairList) {
  */
 export function usePairData(pairAddress) {
   const [state, { update }] = usePairDataContext()
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
   const pairData = state?.[pairAddress]
 
   useEffect(() => {
     async function fetchData() {
       if (!pairData && pairAddress) {
-        let data = await getBulkPairData([pairAddress], ethPrice)
+        let data = await getBulkPairData([pairAddress], celoPrice)
         data && update(pairAddress, data[0])
       }
     }
-    if (!pairData && pairAddress && ethPrice && isAddress(pairAddress)) {
+    if (!pairData && pairAddress && celoPrice && isAddress(pairAddress)) {
       fetchData()
     }
-  }, [pairAddress, pairData, update, ethPrice])
+  }, [pairAddress, pairData, update, celoPrice])
 
   return pairData || {}
 }

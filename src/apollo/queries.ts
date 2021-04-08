@@ -610,7 +610,7 @@ export const PAIR_SEARCH = gql`
 
 export const ALL_PAIRS = gql`
   query pairs($skip: Int!) {
-    pairs(first: 500, skip: $skip, orderBy: trackedReserveCELO, orderDirection: desc) {
+    pairs(first: 500, skip: $skip, orderBy: trackedReserveUSD, orderDirection: desc) {
       id
       token0 {
         id
@@ -648,7 +648,7 @@ const PairFields = `
     reserve1
     reserveUSD
     totalSupply
-    trackedReserveCELO
+    trackedReserveUSD
     reserveCELO
     volumeUSD
     untrackedVolumeUSD
@@ -704,7 +704,7 @@ export const MINING_POSITIONS = (account) => {
 export const PAIRS_BULK = gql`
   ${PairFields}
   query pairs($allPairs: [Bytes]!) {
-    pairs(first: 500, where: { id_in: $allPairs }, orderBy: trackedReserveCELO, orderDirection: desc) {
+    pairs(first: 500, where: { id_in: $allPairs }, orderBy: trackedReserveUSD, orderDirection: desc) {
       ...PairFields
     }
   }
@@ -718,10 +718,10 @@ export const PAIRS_HISTORICAL_BULK = (block, pairs) => {
   pairsString += ']'
   const queryString = `
   query pairs {
-    pairs(first: 200, where: {id_in: ${pairsString}}, block: {number: ${block}}, orderBy: trackedReserveCELO, orderDirection: desc) {
+    pairs(first: 200, where: {id_in: ${pairsString}}, block: {number: ${block}}, orderBy: trackedReserveUSD, orderDirection: desc) {
       id
       reserveUSD
-      trackedReserveCELO
+      trackedReserveUSD
       volumeUSD
       untrackedVolumeUSD
     }
@@ -752,7 +752,7 @@ const TokenFields = `
     name
     symbol
     derivedCUSD
-    tradeVolume
+    tradeVolumeUSD
     tradeVolumeUSD
     untrackedVolumeUSD
     totalLiquidity
