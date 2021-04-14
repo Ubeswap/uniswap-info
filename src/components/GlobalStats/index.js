@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useMedia } from 'react-use'
 import styled from 'styled-components'
 import { useCeloPrice, useGlobalData } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
 import { formattedNum, localNumber } from '../../utils'
 import { RowBetween, RowFixed } from '../Row'
-import UniPrice from '../UniPrice'
 
 const Header = styled.div`
   width: 100%;
@@ -24,8 +23,6 @@ export default function GlobalStats() {
   const below400 = useMedia('(max-width: 400px)')
   const below816 = useMedia('(max-width: 816px)')
 
-  const [showPriceCard, setShowPriceCard] = useState(false)
-
   const { oneDayVolumeUSD, oneDayTxns, pairCount } = useGlobalData()
   const [celoPrice] = useCeloPrice()
   const formattedCeloPrice = celoPrice ? formattedNum(celoPrice, true) : '-'
@@ -36,18 +33,8 @@ export default function GlobalStats() {
       <RowBetween style={{ padding: below816 ? '0.5rem' : '.5rem' }}>
         <RowFixed>
           {!below400 && (
-            <TYPE.main
-              mr={'1rem'}
-              onMouseEnter={() => {
-                setShowPriceCard(true)
-              }}
-              onMouseLeave={() => {
-                setShowPriceCard(false)
-              }}
-              style={{ position: 'relative' }}
-            >
-              ETH Price: <Medium>{formattedCeloPrice}</Medium>
-              {showPriceCard && <UniPrice />}
+            <TYPE.main mr={'1rem'} style={{ position: 'relative' }}>
+              Celo Price: <Medium>{formattedCeloPrice}</Medium>
             </TYPE.main>
           )}
 
