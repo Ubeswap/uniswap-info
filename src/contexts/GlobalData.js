@@ -116,7 +116,6 @@ function reducer(state, { type, payload }) {
 export default function Provider({ children }) {
   const [state, dispatch] = useReducer(reducer, {})
   const update = useCallback((data) => {
-    console.log('do update', data)
     dispatch({
       type: UPDATE,
       payload: {
@@ -248,6 +247,7 @@ async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
       query: GLOBAL_DATA(),
       fetchPolicy: 'cache-first',
     })
+    console.log('global', result)
     data = result.data.ubeswapFactories[0]
 
     // fetch the historical data
@@ -464,7 +464,7 @@ const getGlobalTransactions = async () => {
 }
 
 /**
- * Gets the current price  of ETH, 24 hour price, and % change between them
+ * Gets the current price of CELO, 24 hour price, and % change between them
  */
 const getCeloPrice = async () => {
   const utcCurrentTime = dayjs()
@@ -472,7 +472,7 @@ const getCeloPrice = async () => {
 
   let celoPrice = 0
   let celoPriceOneDay = 0
-  let priceChangeETH = 0
+  let priceChangeCelo = 0
 
   try {
     let oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
@@ -488,14 +488,14 @@ const getCeloPrice = async () => {
       : null
     const currentPrice = result?.data?.bundles[0]?.celoPrice
     const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? currentPrice
-    priceChangeETH = getPercentChange(currentPrice, oneDayBackPrice)
+    priceChangeCelo = getPercentChange(currentPrice, oneDayBackPrice)
     celoPrice = currentPrice
     celoPriceOneDay = oneDayBackPrice
   } catch (e) {
     console.log(e)
   }
 
-  return [celoPrice, celoPriceOneDay, priceChangeETH]
+  return [celoPrice, celoPriceOneDay, priceChangeCelo]
 }
 
 const PAIRS_TO_FETCH = 500

@@ -189,23 +189,6 @@ export async function getBlocksFromTimestamps(timestamps, skipCount = 500) {
     return []
   }
 
-  const now = new Date().getTime() / 1000
-  let result = await client.query({
-    query: gql`
-      query LatestBlockMany {
-        _meta {
-          block {
-            number
-          }
-        }
-      }
-    `,
-    fetchPolicy: 'cache-first',
-  })
-  return timestamps.map((ts) => {
-    return result?.data?._meta?.block?.number - Math.floor((now - ts) / 5)
-  })
-
   let fetchedData = await splitQuery(GET_BLOCKS, blockClient, [], timestamps, skipCount)
 
   let blocks = []
