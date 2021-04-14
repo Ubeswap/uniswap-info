@@ -1993,6 +1993,11 @@
     "@typescript-eslint/types" "4.4.0"
     eslint-visitor-keys "^2.0.0"
 
+"@ubeswap/subgraph@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@ubeswap/subgraph/-/subgraph-1.0.0.tgz#4a2661f4ae0f250929b196208d6e949e9e14ba21"
+  integrity sha512-EXw5kJWOrO08al8s6UiFvePimDVhL5916wzZWFmALD9agli8SSBpnH3SLh5fINtyaC4wECT16HGK4nqxOFPtBQ==
+
 "@uniswap/token-lists@^1.0.0-beta.15":
   version "1.0.0-beta.19"
   resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.19.tgz#5256db144fba721a6233f43b92ffb388cbd58327"
