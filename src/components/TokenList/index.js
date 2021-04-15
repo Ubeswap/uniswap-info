@@ -146,18 +146,9 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
           return !TOKEN_BLACKLIST.includes(key)
         })
         .map((key) => tokens[key])
+        .filter((tok) => tok.totalLiquidityUSD > 0)
     )
   }, [tokens])
-
-  useEffect(() => {
-    if (tokens && formattedTokens) {
-      let extraPages = 1
-      if (formattedTokens.length % itemMax === 0) {
-        extraPages = 0
-      }
-      setMaxPage(Math.floor(formattedTokens.length / itemMax) + extraPages)
-    }
-  }, [tokens, formattedTokens, itemMax])
 
   const filteredList = useMemo(() => {
     return (
@@ -174,6 +165,16 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
         .slice(itemMax * (page - 1), page * itemMax)
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
+
+  useEffect(() => {
+    if (tokens && formattedTokens) {
+      let extraPages = 1
+      if (formattedTokens.length % itemMax === 0) {
+        extraPages = 0
+      }
+      setMaxPage(Math.floor(formattedTokens.length / itemMax) + extraPages)
+    }
+  }, [tokens, formattedTokens, itemMax])
 
   const ListItem = ({ item, index }) => {
     return (
@@ -304,15 +305,17 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
             )
           })}
       </List>
-      <PageButtons>
-        <div onClick={() => setPage(page === 1 ? page : page - 1)}>
-          <Arrow faded={page === 1 ? true : false}>←</Arrow>
-        </div>
-        <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
-        <div onClick={() => setPage(page === maxPage ? page : page + 1)}>
-          <Arrow faded={page === maxPage ? true : false}>→</Arrow>
-        </div>
-      </PageButtons>
+      {maxPage > 1 && (
+        <PageButtons>
+          <div onClick={() => setPage(page === 1 ? page : page - 1)}>
+            <Arrow faded={page === 1 ? true : false}>←</Arrow>
+          </div>
+          <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
+          <div onClick={() => setPage(page === maxPage ? page : page + 1)}>
+            <Arrow faded={page === maxPage ? true : false}>→</Arrow>
+          </div>
+        </PageButtons>
+      )}
     </ListWrapper>
   )
 }
