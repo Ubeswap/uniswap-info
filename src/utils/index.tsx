@@ -9,7 +9,8 @@ import React from 'react'
 import { Text } from 'rebass'
 import toFormat from 'toformat'
 import { blockClient, client } from '../apollo/client'
-import { GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
+import { GetBlockQuery, GetBlockQueryVariables } from '../apollo/generated/types'
+import { GET_BLOCK, GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 
 // format libraries
@@ -71,7 +72,7 @@ export function getMiningPoolLink(token0Address) {
 }
 
 export function getUbeswapAppLink(linkVariable) {
-  let baseUbeswapUrl = 'https://app.ubeswap.org/#/uni'
+  const baseUbeswapUrl = 'https://app.ubeswap.org/#/uni'
   if (!linkVariable) {
     return baseUbeswapUrl
   }
@@ -84,7 +85,7 @@ export function localNumber(val) {
 }
 
 export const toNiceDate = (date) => {
-  let x = dayjs.utc(dayjs.unix(date)).format('MMM DD')
+  const x = dayjs.utc(dayjs.unix(date)).format('MMM DD')
   return x
 }
 
@@ -97,13 +98,13 @@ export function shortenAddress(address, chars = 4) {
   return `${parsed.substring(0, chars + 2)}...${parsed.substring(42 - chars)}`
 }
 
-export const toWeeklyDate = (date) => {
+export const toWeeklyDate = (date: number): string => {
   const formatted = dayjs.utc(dayjs.unix(date))
-  date = new Date(formatted)
-  const day = new Date(formatted).getDay()
-  var lessDays = day === 6 ? 0 : day + 1
-  var wkStart = new Date(new Date(date).setDate(date.getDate() - lessDays))
-  var wkEnd = new Date(new Date(wkStart).setDate(wkStart.getDate() + 6))
+  const dateObj = formatted.toDate()
+  const day = dateObj.getDay()
+  const lessDays = day === 6 ? 0 : day + 1
+  const wkStart = new Date(new Date(date).setDate(dateObj.getDate() - lessDays))
+  const wkEnd = new Date(new Date(wkStart).setDate(wkStart.getDate() + 6))
   return dayjs.utc(wkStart).format('MMM DD') + ' - ' + dayjs.utc(wkEnd).format('MMM DD')
 }
 
@@ -125,8 +126,8 @@ export async function splitQuery(query, localClient, vars, list, skipCount = 100
     if (skip + skipCount < list.length) {
       end = skip + skipCount
     }
-    let sliced = list.slice(skip, end)
-    let result = await localClient.query({
+    const sliced = list.slice(skip, end)
+    const result = await localClient.query({
       query: query(...vars, sliced),
       fetchPolicy: 'cache-first',
     })
@@ -149,32 +150,16 @@ export async function splitQuery(query, localClient, vars, list, skipCount = 100
  * @dev Query speed is optimized by limiting to a 600-second period
  * @param {Int} timestamp in seconds
  */
-export async function getBlockFromTimestamp(timestamp) {
-  // let result = await blockClient.query({
-  //   query: GET_BLOCK,
-  //   variables: {
-  //     timestampFrom: timestamp,
-  //     timestampTo: timestamp + 600,
-  //   },
-  //   fetchPolicy: 'cache-first',
-  // })
-
-  let result = await client.query({
-    query: gql`
-      query LatestBlock {
-        _meta {
-          block {
-            number
-          }
-        }
-      }
-    `,
+export async function getBlockFromTimestamp(timestamp: number): Promise<number> {
+  const result = await blockClient.query<GetBlockQuery, GetBlockQueryVariables>({
+    query: GET_BLOCK,
+    variables: {
+      timestampFrom: timestamp.toString(),
+      timestampTo: (timestamp + 600).toString(),
+    },
     fetchPolicy: 'cache-first',
   })
-
-  const now = new Date().getTime() / 1000
-  const estimated = result?.data?._meta?.block?.number - Math.floor((now - timestamp) / 5)
-  return result?.data?.blocks?.[0]?.number ?? estimated
+  return parseInt(result?.data?.blocks?.[0]?.number ?? '0')
 }
 
 /**
@@ -184,20 +169,23 @@ export async function getBlockFromTimestamp(timestamp) {
  * @dev timestamps are returns as they were provided; not the block time.
  * @param {Array} timestamps
  */
-export async function getBlocksFromTimestamps(timestamps, skipCount = 500) {
+export async function getBlocksFromTimestamps(
+  timestamps,
+  skipCount = 500
+): Promise<readonly { timestamp: number; number: number }[]> {
   if (timestamps?.length === 0) {
     return []
   }
 
-  let fetchedData = await splitQuery(GET_BLOCKS, blockClient, [], timestamps, skipCount)
+  const fetchedData = await splitQuery(GET_BLOCKS, blockClient, [], timestamps, skipCount)
 
-  let blocks = []
+  const blocks: { timestamp: number; number: number }[] = []
   if (fetchedData) {
-    for (var t in fetchedData) {
+    for (const t in fetchedData) {
       if (fetchedData[t].length > 0) {
         blocks.push({
-          timestamp: t.split('t')[1],
-          number: fetchedData[t][0]['number'],
+          timestamp: parseInt(t.split('t')[1]),
+          number: parseInt(fetchedData[t][0]['number']),
         })
       }
     }
@@ -244,15 +232,15 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
   const blocks = await getBlocksFromTimestamps(timestamps)
 
   // get historical share values with time travel queries
-  let result = await client.query({
+  const result = await client.query({
     query: SHARE_VALUE(pairAddress, blocks),
     fetchPolicy: 'cache-first',
   })
 
-  let values = []
-  for (var row in result?.data) {
-    let timestamp = row.split('t')[1]
-    let sharePriceUsd = parseFloat(result.data[row]?.reserveUSD) / parseFloat(result.data[row]?.totalSupply)
+  const values = []
+  for (const row in result?.data) {
+    const timestamp = row.split('t')[1]
+    const sharePriceUsd = parseFloat(result.data[row]?.reserveUSD) / parseFloat(result.data[row]?.totalSupply)
     if (timestamp) {
       values.push({
         timestamp,
@@ -273,8 +261,8 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
 
   // add eth prices
   let index = 0
-  for (var brow in result?.data) {
-    let timestamp = brow.split('b')[1]
+  for (const brow in result?.data) {
+    const timestamp = brow.split('b')[1]
     if (timestamp) {
       values[index].celoPrice = result.data[brow].celoPrice
       values[index].token0PriceUSD = result.data[brow].celoPrice * values[index].token0DerivedETH
@@ -294,7 +282,7 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
  * @param {Int} periods
  */
 export function getTimestampRange(timestamp_from, period_length, periods) {
-  let timestamps = []
+  const timestamps = []
   for (let i = 0; i <= periods; i++) {
     timestamps.push(timestamp_from + i * period_length)
   }
@@ -311,7 +299,7 @@ export const isAddress = (value) => {
   }
 }
 
-export const toK = (num) => {
+export const toK = (num): string => {
   return Numeral(num).format('0.[00]a')
 }
 
@@ -371,10 +359,10 @@ export const formattedNum = (number, usd = false, acceptNegatives = false) => {
   if (isNaN(number) || number === '' || number === undefined) {
     return usd ? '$0' : 0
   }
-  let num = parseFloat(number)
+  const num = parseFloat(number)
 
   if (num > 500000000) {
-    return (usd ? '$' : '') + toK(num.toFixed(0), true)
+    return (usd ? '$' : '') + toK(num.toFixed(0))
   }
 
   if (num === 0) {
@@ -389,7 +377,7 @@ export const formattedNum = (number, usd = false, acceptNegatives = false) => {
   }
 
   if (num > 1000) {
-    return usd ? formatDollarAmount(num, 0) : Number(parseFloat(num).toFixed(0)).toLocaleString()
+    return usd ? formatDollarAmount(num, 0) : Number(parseFloat(num.toString()).toFixed(0)).toLocaleString()
   }
 
   if (usd) {
@@ -400,11 +388,11 @@ export const formattedNum = (number, usd = false, acceptNegatives = false) => {
     }
   }
 
-  return Number(parseFloat(num).toFixed(5)).toLocaleString()
+  return Number(parseFloat(num.toString()).toFixed(5)).toLocaleString()
 }
 
-export function rawPercent(percentRaw) {
-  let percent = parseFloat(percentRaw * 100)
+export function rawPercent(percentRaw: number): string {
+  const percent = parseFloat((percentRaw * 100).toString())
   if (!percent || percent === 0) {
     return '0%'
   }
@@ -436,7 +424,7 @@ export function formattedPercent(percent, useBrackets = false) {
     )
   }
 
-  let fixedPercent = percent.toFixed(2)
+  const fixedPercent = percent.toFixed(2)
   if (fixedPercent === '0.00') {
     return '0%'
   }
@@ -459,10 +447,11 @@ export function formattedPercent(percent, useBrackets = false) {
  */
 export const get2DayPercentChange = (valueNow, value24HoursAgo, value48HoursAgo) => {
   // get volume info for both 24 hour periods
-  let currentChange = parseFloat(valueNow) - parseFloat(value24HoursAgo)
-  let previousChange = parseFloat(value24HoursAgo) - parseFloat(value48HoursAgo)
+  const currentChange = parseFloat(valueNow) - parseFloat(value24HoursAgo)
+  const previousChange = parseFloat(value24HoursAgo) - parseFloat(value48HoursAgo)
 
-  const adjustedPercentChange = (parseFloat(currentChange - previousChange) / parseFloat(previousChange)) * 100
+  const adjustedPercentChange =
+    (parseFloat((currentChange - previousChange).toString()) / parseFloat(previousChange.toString())) * 100
 
   if (isNaN(adjustedPercentChange) || !isFinite(adjustedPercentChange)) {
     return [currentChange, 0]
@@ -475,23 +464,25 @@ export const get2DayPercentChange = (valueNow, value24HoursAgo, value48HoursAgo)
  * @param {*} valueNow
  * @param {*} value24HoursAgo
  */
-export const getPercentChange = (valueNow, value24HoursAgo) => {
+export const getPercentChange = (valueNow: string | number, value24HoursAgo: string | number): number => {
   const adjustedPercentChange =
-    ((parseFloat(valueNow) - parseFloat(value24HoursAgo)) / parseFloat(value24HoursAgo)) * 100
+    ((parseFloat(valueNow.toString()) - parseFloat(value24HoursAgo.toString())) /
+      parseFloat(value24HoursAgo.toString())) *
+    100
   if (isNaN(adjustedPercentChange) || !isFinite(adjustedPercentChange)) {
     return 0
   }
   return adjustedPercentChange
 }
 
-export function isEquivalent(a, b) {
-  var aProps = Object.getOwnPropertyNames(a)
-  var bProps = Object.getOwnPropertyNames(b)
+export function isEquivalent(a, b): boolean {
+  const aProps = Object.getOwnPropertyNames(a)
+  const bProps = Object.getOwnPropertyNames(b)
   if (aProps.length !== bProps.length) {
     return false
   }
-  for (var i = 0; i < aProps.length; i++) {
-    var propName = aProps[i]
+  for (let i = 0; i < aProps.length; i++) {
+    const propName = aProps[i]
     if (a[propName] !== b[propName]) {
       return false
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { isAddress } from '../../utils/index.js'
+import { isAddress } from '../../utils/index'
 const CeloLogo = 'https://github.com/Ubeswap/default-token-list/blob/master/assets/asset_CELO.png'
 
 const BAD_IMAGES = {}

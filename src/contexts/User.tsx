@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { client } from '../apollo/client'
+import { UserTransactionsQuery } from '../apollo/generated/types'
 import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 import { getHistoricalPairReturns, getLPReturnsOnPair } from '../utils/returns'
@@ -23,7 +24,12 @@ const MINING_POSITIONS_KEY = 'MINING_POSITIONS_KEY'
 const USER_SNAPSHOTS = 'USER_SNAPSHOTS'
 const USER_PAIR_RETURNS_KEY = 'USER_PAIR_RETURNS_KEY'
 
-const UserContext = createContext()
+type IUserContext = [
+  any,
+  { updateTransactions; updatePositions; updateMiningPositions; updateUserSnapshots; updateUserPairReturns }
+]
+
+const UserContext = createContext<IUserContext | undefined>(undefined)
 
 function useUserContext() {
   return useContext(UserContext)
@@ -85,7 +91,7 @@ function reducer(state, { type, payload }) {
 
 const INITIAL_STATE = {}
 
-export default function Provider({ children }) {
+export default function Provider({ children }: { children?: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
 
   const updateTransactions = useCallback((account, transactions) => {
@@ -160,7 +166,7 @@ export function useUserTransactions(account) {
   useEffect(() => {
     async function fetchData(account) {
       try {
-        let result = await client.query({
+        const result = await client.query<UserTransactionsQuery>({
           query: USER_TRANSACTIONS,
           variables: {
             user: account,
@@ -198,7 +204,7 @@ export function useUserSnapshots(account) {
         let allResults = []
         let found = false
         while (!found) {
-          let result = await client.query({
+          const result = await client.query({
             query: USER_HISTORY,
             variables: {
               skip: skip,
@@ -259,7 +265,7 @@ export function useUserPositionChart(position, account) {
 
   useEffect(() => {
     async function fetchData() {
-      let fetchedData = await getHistoricalPairReturns(
+      const fetchedData = await getHistoricalPairReturns(
         startDateTimestamp,
         currentPairData,
         pairSnapshots,
@@ -302,9 +308,9 @@ export function useUserPositionChart(position, account) {
 export function useUserLiquidityChart(account) {
   const history = useUserSnapshots(account)
   // formatetd array to return for chart data
-  const [formattedHistory, setFormattedHistory] = useState()
+  const [formattedHistory, setFormattedHistory] = useState<any[] | undefined>()
 
-  const [startDateTimestamp, setStartDateTimestamp] = useState()
+  const [startDateTimestamp, setStartDateTimestamp] = useState<number | undefined>()
   const [activeWindow] = useTimeframe()
 
   // monitor the old date fetched
@@ -323,7 +329,7 @@ export function useUserLiquidityChart(account) {
         utcStartTime = utcEndTime.subtract(1, 'year').startOf('year')
         break
     }
-    let startTime = utcStartTime.unix() - 1
+    const startTime = utcStartTime.unix() - 1
     if ((activeWindow && startTime < startDateTimestamp) || !startDateTimestamp) {
       setStartDateTimestamp(startTime)
     }
@@ -331,22 +337,22 @@ export function useUserLiquidityChart(account) {
 
   useEffect(() => {
     async function fetchData() {
-      let dayIndex = parseInt(startDateTimestamp / 86400) // get unique day bucket unix
-      const currentDayIndex = parseInt(dayjs.utc().unix() / 86400)
+      let dayIndex = parseInt((startDateTimestamp / 86400).toString()) // get unique day bucket unix
+      const currentDayIndex = parseInt((dayjs.utc().unix() / 86400).toString())
 
       // sort snapshots in order
-      let sortedPositions = history.sort((a, b) => {
+      const sortedPositions = history.sort((a, b) => {
         return parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1
       })
       // if UI start time is > first position time - bump start index to this time
       if (parseInt(sortedPositions[0].timestamp) > dayIndex) {
-        dayIndex = parseInt(parseInt(sortedPositions[0].timestamp) / 86400)
+        dayIndex = parseInt((parseInt(sortedPositions[0].timestamp.toString()) / 86400).toString())
       }
 
       const dayTimestamps = []
       // get date timestamps for all days in view
       while (dayIndex < currentDayIndex) {
-        dayTimestamps.push(parseInt(dayIndex) * 86400)
+        dayTimestamps.push(parseInt(dayIndex.toString()) * 86400)
         dayIndex = dayIndex + 1
       }
 
@@ -355,7 +361,7 @@ export function useUserLiquidityChart(account) {
       }, [])
 
       // get all day datas where date is in this list, and pair is in pair list
-      let {
+      const {
         data: { pairDayDatas },
       } = await client.query({
         query: PAIR_DAY_DATA_BULK(pairs, startDateTimestamp),
@@ -447,7 +453,7 @@ export function useUserPositions(account) {
   useEffect(() => {
     async function fetchData(account) {
       try {
-        let result = await client.query({
+        const result = await client.query({
           query: USER_POSITIONS,
           variables: {
             user: account,
@@ -455,7 +461,7 @@ export function useUserPositions(account) {
           fetchPolicy: 'no-cache',
         })
         if (result?.data?.liquidityPositions) {
-          let formattedPositions = await Promise.all(
+          const formattedPositions = await Promise.all(
             result?.data?.liquidityPositions.map(async (positionData) => {
               const returnData = await getLPReturnsOnPair(account, positionData.pair, celoPrice, snapshots)
               return {

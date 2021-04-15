@@ -1,0 +1,16 @@
+schema:
+  - https://api.thegraph.com/index-node/graphql
+  - https://api.thegraph.com/subgraphs/name/ubeswap/ubeswap
+  - https://api.thegraph.com/subgraphs/name/ubeswap/celo-blocks-since-ubeswap
+documents: ./src/apollo/queries.ts
+config:
+  immutableTypes: true
+  scalars:
+    Bytes: 'string & { _isBytes?: true; }'
+    BigInt: 'string & { _isBigInt?: true; }'
+    BigDecimal: 'string & { _isBigDecimal?: true; }'
+generates:
+  ./src/apollo/generated/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations

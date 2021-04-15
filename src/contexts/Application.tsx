@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { healthClient } from '../apollo/client'
+import { HealthQuery } from '../apollo/generated/types'
 import { SUBGRAPH_HEALTH } from '../apollo/queries'
 import { SUPPORTED_LIST_URLS__NO_ENS, timeframeOptions } from '../constants'
 import getTokenList from '../utils/tokenLists'
@@ -21,7 +22,25 @@ const SESSION_START = 'SESSION_START'
 const LATEST_BLOCK = 'LATEST_BLOCK'
 const HEAD_BLOCK = 'HEAD_BLOCK'
 
-const ApplicationContext = createContext()
+type IApplicationState = {
+  CURRENCY: string
+  TIME_KEY: string
+  [SESSION_START]: number
+} & Record<string, unknown>
+
+type IApplicationContext = [
+  IApplicationState,
+  {
+    update: any
+    updateSessionStart: any
+    updateTimeframe: any
+    updateSupportedTokens: any
+    updateLatestBlock: any
+    updateHeadBlock: any
+  }
+]
+
+const ApplicationContext = createContext<IApplicationContext | null>(null)
 
 function useApplicationContext() {
   return useContext(ApplicationContext)
@@ -86,7 +105,11 @@ const INITIAL_STATE = {
   TIME_KEY: timeframeOptions.ALL_TIME,
 }
 
-export default function Provider({ children }) {
+interface Props {
+  children?: React.ReactNode
+}
+
+export default function Provider({ children }: Props) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
   const update = useCallback((currency) => {
     dispatch({
@@ -175,7 +198,7 @@ export function useLatestBlocks() {
   useEffect(() => {
     async function fetch() {
       healthClient
-        .query({
+        .query<HealthQuery>({
           query: SUBGRAPH_HEALTH,
         })
         .then((res) => {
@@ -198,7 +221,7 @@ export function useLatestBlocks() {
   return [latestBlock, headBlock]
 }
 
-export function useCurrentCurrency() {
+export function useCurrentCurrency(): [string, () => void] {
   const [state, { update }] = useApplicationContext()
   const toggleCurrency = useCallback(() => {
     if (state.currency === 'ETH') {
@@ -218,11 +241,11 @@ export function useTimeframe() {
 
 export function useStartTimestamp() {
   const [activeWindow] = useTimeframe()
-  const [startDateTimestamp, setStartDateTimestamp] = useState()
+  const [startDateTimestamp, setStartDateTimestamp] = useState<number | undefined>()
 
   // monitor the old date fetched
   useEffect(() => {
-    let startTime =
+    const startTime =
       dayjs
         .utc()
         .subtract(
@@ -260,7 +283,7 @@ export function useSessionStart() {
     return () => clearInterval(interval)
   }, [seconds, sessionStart])
 
-  return parseInt(seconds / 1000)
+  return parseInt((seconds / 1000).toString())
 }
 
 export function useListedTokens() {
@@ -274,7 +297,7 @@ export function useListedTokens() {
         const newTokens = await getTokenList(url)
         return Promise.resolve([...tokensSoFar, ...newTokens.tokens])
       }, Promise.resolve([]))
-      let formatted = allFetched?.map((t) => t.address.toLowerCase())
+      const formatted = allFetched?.map((t) => t.address.toLowerCase())
       updateSupportedTokens(formatted)
     }
     if (!supportedTokens) {

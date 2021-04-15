@@ -4,14 +4,28 @@ import weekOfYear from 'dayjs/plugin/weekOfYear'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 import { client } from '../apollo/client'
 import {
+  CeloPriceQuery,
+  CeloPriceQueryVariables,
+  CurrentCeloPriceQuery,
+  GlobalDataLatestQuery,
+  GlobalDataLatestQueryVariables,
+  GlobalDataQuery,
+  GlobalDataQueryVariables,
+  GlobalTransactionsQuery,
+  Mint,
+} from '../apollo/generated/types'
+import {
   ALL_PAIRS,
   ALL_TOKENS,
   CELO_PRICE,
+  CURRENT_CELO_PRICE,
   GLOBAL_CHART,
   GLOBAL_DATA,
+  GLOBAL_DATA_LATEST,
   GLOBAL_TXNS,
   TOP_LPS_PER_PAIRS,
 } from '../apollo/queries'
+import { FACTORY_ADDRESS } from '../constants'
 import {
   get2DayPercentChange,
   getBlockFromTimestamp,
@@ -43,7 +57,7 @@ const offsetVolumes = [
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)
 
-const GlobalDataContext = createContext()
+const GlobalDataContext = createContext(null)
 
 function useGlobalDataContext() {
   return useContext(GlobalDataContext)
@@ -113,7 +127,7 @@ function reducer(state, { type, payload }) {
   }
 }
 
-export default function Provider({ children }) {
+export default function Provider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {})
   const update = useCallback((data) => {
     dispatch({
@@ -212,6 +226,17 @@ export default function Provider({ children }) {
   )
 }
 
+type IGlobalData = GlobalDataQuery['ubeswapFactories'][number] &
+  Partial<{
+    oneDayVolumeUSD: number
+    oneWeekVolume: number
+    weeklyVolumeChange: number
+    volumeChangeUSD: number
+    liquidityChangeUSD: number
+    oneDayTxns: number
+    txnChange: number
+  }>
+
 /**
  * Gets all the global data for the overview page.
  * Needs current eth price and the old eth price to get
@@ -220,11 +245,11 @@ export default function Provider({ children }) {
  * @param {*} oldCeloPrice
  */
 
-async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
+async function getGlobalData(): Promise<IGlobalData> {
   // data for each day , historic data used for % changes
-  let data = {}
-  let oneDayData = {}
-  let twoDayData = {}
+  let data: IGlobalData | null = null
+  let oneDayData: GlobalDataQuery['ubeswapFactories'][number] | null = null
+  let twoDayData: GlobalDataQuery['ubeswapFactories'][number] | null = null
 
   try {
     // get timestamps for the days
@@ -235,7 +260,7 @@ async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
     const utcTwoWeeksBack = utcCurrentTime.subtract(2, 'week').unix()
 
     // get the blocks needed for time travel queries
-    let [oneDayBlock, twoDayBlock, oneWeekBlock, twoWeekBlock] = await getBlocksFromTimestamps([
+    const [oneDayBlock, twoDayBlock, oneWeekBlock, twoWeekBlock] = await getBlocksFromTimestamps([
       utcOneDayBack,
       utcTwoDaysBack,
       utcOneWeekBack,
@@ -243,40 +268,58 @@ async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
     ])
 
     // fetch the global data
-    let result = await client.query({
-      query: GLOBAL_DATA(),
+    const result = await client.query<GlobalDataLatestQuery, GlobalDataLatestQueryVariables>({
+      query: GLOBAL_DATA_LATEST,
+      variables: {
+        factoryAddress: FACTORY_ADDRESS,
+      },
       fetchPolicy: 'cache-first',
     })
-    console.log('global', result)
     data = result.data.ubeswapFactories[0]
 
     // fetch the historical data
-    let oneDayResult = await client.query({
-      query: GLOBAL_DATA(oneDayBlock?.number),
+    const oneDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
+      query: GLOBAL_DATA,
+      variables: {
+        block: oneDayBlock?.number,
+        factoryAddress: FACTORY_ADDRESS,
+      },
       fetchPolicy: 'cache-first',
     })
     oneDayData = oneDayResult.data.ubeswapFactories[0]
 
-    let twoDayResult = await client.query({
-      query: GLOBAL_DATA(twoDayBlock?.number),
+    const twoDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
+      query: GLOBAL_DATA,
+      variables: {
+        block: twoDayBlock?.number,
+        factoryAddress: FACTORY_ADDRESS,
+      },
       fetchPolicy: 'cache-first',
     })
     twoDayData = twoDayResult.data.ubeswapFactories[0]
 
-    let oneWeekResult = await client.query({
-      query: GLOBAL_DATA(oneWeekBlock?.number),
+    const oneWeekResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
+      query: GLOBAL_DATA,
+      variables: {
+        block: oneWeekBlock?.number,
+        factoryAddress: FACTORY_ADDRESS,
+      },
       fetchPolicy: 'cache-first',
     })
     const oneWeekData = oneWeekResult.data.ubeswapFactories[0]
 
-    let twoWeekResult = await client.query({
-      query: GLOBAL_DATA(twoWeekBlock?.number),
+    const twoWeekResult = await client.query<GlobalDataQuery>({
+      query: GLOBAL_DATA,
+      variables: {
+        block: twoWeekBlock?.number,
+        factoryAddress: FACTORY_ADDRESS,
+      },
       fetchPolicy: 'cache-first',
     })
     const twoWeekData = twoWeekResult.data.ubeswapFactories[0]
 
     if (data && oneDayData && twoDayData && twoWeekData) {
-      let [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
+      const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
         data.totalVolumeUSD,
         oneDayData.totalVolumeUSD,
         twoDayData.totalVolumeUSD
@@ -295,25 +338,24 @@ async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
       )
 
       // format the total liquidity in USD
-      data.totalLiquidityUSD = data.totalLiquidityETH * celoPrice
-      const liquidityChangeUSD = getPercentChange(
-        data.totalLiquidityETH * celoPrice,
-        oneDayData.totalLiquidityETH * oldCeloPrice
-      )
-
-      // add relevant fields with the calculated amounts
-      data.oneDayVolumeUSD = oneDayVolumeUSD - offsetVolume
-      data.oneWeekVolume = oneWeekVolume
-      data.weeklyVolumeChange = weeklyVolumeChange
-      data.volumeChangeUSD = volumeChangeUSD
-      data.liquidityChangeUSD = liquidityChangeUSD
-      data.oneDayTxns = oneDayTxns
-      data.txnChange = txnChange
+      const liquidityChangeUSD = getPercentChange(data.totalLiquidityUSD, oneDayData.totalLiquidityUSD)
+      const additionalData = {
+        // add relevant fields with the calculated amounts
+        oneDayVolumeUSD: oneDayVolumeUSD,
+        oneWeekVolume: oneWeekVolume,
+        weeklyVolumeChange: weeklyVolumeChange,
+        volumeChangeUSD: volumeChangeUSD,
+        liquidityChangeUSD: liquidityChangeUSD,
+        oneDayTxns: oneDayTxns,
+        txnChange: txnChange,
+      }
+      return { ...data, ...additionalData }
     }
   } catch (e) {
     console.log(e)
   }
 
+  console.log(data)
   return data
 }
 
@@ -326,14 +368,14 @@ async function getGlobalData(celoPrice, oldCeloPrice, offsetVolume) {
 let checked = false
 const getChartData = async (oldestDateToFetch, offsetData) => {
   let data = []
-  let weeklyData = []
+  const weeklyData = []
   const utcEndTime = dayjs.utc()
   let skip = 0
   let allFound = false
 
   try {
     while (!allFound) {
-      let result = await client.query({
+      const result = await client.query({
         query: GLOBAL_CHART,
         variables: {
           startTime: oldestDateToFetch,
@@ -349,8 +391,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
     }
 
     if (data) {
-      let dayIndexSet = new Set()
-      let dayIndexArray = []
+      const dayIndexSet = new Set()
+      const dayIndexArray = []
       const oneDay = 24 * 60 * 60
 
       // for each day, parse the daily volume and format for chart array
@@ -368,7 +410,7 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
       let index = 1
       while (timestamp < utcEndTime.unix() - oneDay) {
         const nextDay = timestamp + oneDay
-        let currentDayIndex = (nextDay / oneDay).toFixed(0)
+        const currentDayIndex = (nextDay / oneDay).toFixed(0)
 
         if (!dayIndexSet.has(currentDayIndex)) {
           data.push({
@@ -427,40 +469,41 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
  * Get and format transactions for global page
  */
 const getGlobalTransactions = async () => {
-  let transactions = {}
+  const mints = []
+  const burns = []
+  const swaps = []
 
   try {
-    let result = await client.query({
+    const result = await client.query<GlobalTransactionsQuery>({
       query: GLOBAL_TXNS,
       fetchPolicy: 'cache-first',
     })
-    transactions.mints = []
-    transactions.burns = []
-    transactions.swaps = []
     result?.data?.transactions &&
       result.data.transactions.map((transaction) => {
         if (transaction.mints.length > 0) {
           transaction.mints.map((mint) => {
-            return transactions.mints.push(mint)
+            return mints.push(mint)
           })
         }
         if (transaction.burns.length > 0) {
           transaction.burns.map((burn) => {
-            return transactions.burns.push(burn)
+            return burns.push(burn)
           })
         }
         if (transaction.swaps.length > 0) {
           transaction.swaps.map((swap) => {
-            return transactions.swaps.push(swap)
+            return swaps.push(swap)
           })
         }
         return true
       })
+
+    return { mints, burns, swaps }
   } catch (e) {
     console.log(e)
   }
 
-  return transactions
+  return {}
 }
 
 /**
@@ -475,22 +518,25 @@ const getCeloPrice = async () => {
   let priceChangeCelo = 0
 
   try {
-    let oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
-    let result = await client.query({
-      query: CELO_PRICE(),
+    const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
+    const result = await client.query<CurrentCeloPriceQuery>({
+      query: CURRENT_CELO_PRICE,
       fetchPolicy: 'cache-first',
     })
-    let resultOneDay = oneDayBlock
-      ? await client.query({
-          query: CELO_PRICE(oneDayBlock),
+    const resultOneDay = oneDayBlock
+      ? await client.query<CeloPriceQuery, CeloPriceQueryVariables>({
+          query: CELO_PRICE,
           fetchPolicy: 'cache-first',
+          variables: {
+            block: oneDayBlock,
+          },
         })
       : null
     const currentPrice = result?.data?.bundles[0]?.celoPrice
     const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? currentPrice
     priceChangeCelo = getPercentChange(currentPrice, oneDayBackPrice)
-    celoPrice = currentPrice
-    celoPriceOneDay = oneDayBackPrice
+    celoPrice = parseFloat(currentPrice)
+    celoPriceOneDay = parseFloat(oneDayBackPrice)
   } catch (e) {
     console.log(e)
   }
@@ -510,7 +556,7 @@ async function getAllPairsOnUbeswap() {
     let pairs = []
     let skipCount = 0
     while (!allFound) {
-      let result = await client.query({
+      const result = await client.query({
         query: ALL_PAIRS,
         variables: {
           skip: skipCount,
@@ -538,7 +584,7 @@ async function getAllTokensOnUbeswap() {
     let skipCount = 0
     let tokens = []
     while (!allFound) {
-      let result = await client.query({
+      const result = await client.query({
         query: ALL_TOKENS,
         variables: {
           skip: skipCount,
@@ -568,14 +614,14 @@ export function useGlobalData() {
 
   useEffect(() => {
     async function fetchData() {
-      let globalData = await getGlobalData(celoPrice, oldCeloPrice)
+      const globalData = await getGlobalData()
 
       globalData && update(globalData)
 
-      let allPairs = await getAllPairsOnUbeswap()
+      const allPairs = await getAllPairsOnUbeswap()
       updateAllPairsInUbeswap(allPairs)
 
-      let allTokens = await getAllTokensOnUbeswap()
+      const allTokens = await getAllTokensOnUbeswap()
       updateAllTokensInUbeswap(allTokens)
     }
     if (!data && celoPrice) {
@@ -588,7 +634,7 @@ export function useGlobalData() {
 
 export function useGlobalChartData() {
   const [state, { updateChart }] = useGlobalDataContext()
-  const [oldestDateFetch, setOldestDateFetched] = useState()
+  const [oldestDateFetch, setOldestDateFetched] = useState<number | undefined>()
   const [activeWindow] = useTimeframe()
 
   const chartDataDaily = state?.chartData?.daily
@@ -601,9 +647,9 @@ export function useGlobalChartData() {
    */
   useEffect(() => {
     // based on window, get starttime
-    let startTime = getTimeframe(activeWindow)
+    const startTime = getTimeframe(activeWindow)
 
-    if ((activeWindow && startTime < oldestDateFetch) || !oldestDateFetch) {
+    if (!oldestDateFetch || (activeWindow && startTime < oldestDateFetch)) {
       setOldestDateFetched(startTime)
     }
   }, [activeWindow, oldestDateFetch])
@@ -618,7 +664,7 @@ export function useGlobalChartData() {
   useEffect(() => {
     async function fetchData() {
       // historical stuff for chart
-      let [newChartData, newWeeklyData] = await getChartData(oldestDateFetch, combinedData)
+      const [newChartData, newWeeklyData] = await getChartData(oldestDateFetch, combinedData)
       updateChart(newChartData, newWeeklyData)
     }
     if (oldestDateFetch && !(chartDataDaily && chartDataWeekly) && combinedData) {
@@ -635,7 +681,7 @@ export function useGlobalTransactions() {
   useEffect(() => {
     async function fetchData() {
       if (!transactions) {
-        let txns = await getGlobalTransactions()
+        const txns = await getGlobalTransactions()
         updateTransactions(txns)
       }
     }
@@ -651,7 +697,7 @@ export function useCeloPrice() {
   useEffect(() => {
     async function checkForCeloPrice() {
       if (!celoPrice) {
-        let [newPrice, oneDayPrice, priceChange] = await getCeloPrice()
+        const [newPrice, oneDayPrice, priceChange] = await getCeloPrice()
         updateCeloPrice(newPrice, oneDayPrice, priceChange)
       }
     }
@@ -663,14 +709,14 @@ export function useCeloPrice() {
 
 export function useAllPairsInUbeswap() {
   const [state] = useGlobalDataContext()
-  let allPairs = state?.allPairs
+  const allPairs = state?.allPairs
 
   return allPairs || []
 }
 
 export function useAllTokensInUbeswap() {
   const [state] = useGlobalDataContext()
-  let allTokens = state?.allTokens
+  const allTokens = state?.allTokens
 
   return allTokens || []
 }
@@ -681,19 +727,19 @@ export function useAllTokensInUbeswap() {
  */
 export function useTopLps() {
   const [state, { updateTopLps }] = useGlobalDataContext()
-  let topLps = state?.topLps
+  const topLps = state?.topLps
 
   const allPairs = useAllPairData()
 
   useEffect(() => {
     async function fetchData() {
       // get top 20 by reserves
-      let topPairs = Object.keys(allPairs)
-        ?.sort((a, b) => parseFloat(allPairs[a].reserveUSD > allPairs[b].reserveUSD ? -1 : 1))
+      const topPairs = Object.keys(allPairs)
+        ?.sort((a, b) => parseFloat((allPairs[a].reserveUSD > allPairs[b].reserveUSD ? -1 : 1).toString()))
         ?.slice(0, 99)
         .map((pair) => pair)
 
-      let topLpLists = await Promise.all(
+      const topLpLists = await Promise.all(
         topPairs.map(async (pair) => {
           // for each one, fetch top LPs
           try {

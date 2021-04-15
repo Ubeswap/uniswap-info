@@ -16,7 +16,16 @@ const UPDATABLE_KEYS = [DARK_MODE, DISMISSED_PATHS, SAVED_ACCOUNTS, SAVED_PAIRS,
 
 const UPDATE_KEY = 'UPDATE_KEY'
 
-const LocalStorageContext = createContext()
+type ILocalStorage = {
+  [VERSION]: typeof CURRENT_VERSION
+  [DARK_MODE]: boolean
+  [DISMISSED_PATHS]: Record<string, unknown>
+  [SAVED_ACCOUNTS]: string[]
+  [SAVED_TOKENS]: Record<string, unknown>
+  [SAVED_PAIRS]: Record<string, unknown>
+}
+
+const LocalStorageContext = createContext<[ILocalStorage | undefined, any]>([undefined, null])
 
 function useLocalStorageContext() {
   return useContext(LocalStorageContext)
@@ -64,7 +73,7 @@ function init() {
   }
 }
 
-export default function Provider({ children }) {
+export default function Provider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, init)
 
   const updateKey = useCallback((key, value) => {
@@ -90,7 +99,7 @@ export function Updater() {
 
 export function useDarkModeManager() {
   const [state, { updateKey }] = useLocalStorageContext()
-  let isDarkMode = state[DARK_MODE]
+  const isDarkMode = state[DARK_MODE]
   const toggleDarkMode = useCallback(
     (value) => {
       updateKey(DARK_MODE, value === false || value === true ? value : !isDarkMode)
@@ -104,7 +113,7 @@ export function usePathDismissed(path) {
   const [state, { updateKey }] = useLocalStorageContext()
   const pathDismissed = state?.[DISMISSED_PATHS]?.[path]
   function dismiss() {
-    let newPaths = state?.[DISMISSED_PATHS]
+    const newPaths = state?.[DISMISSED_PATHS]
     newPaths[path] = true
     updateKey(DISMISSED_PATHS, newPaths)
   }
@@ -125,7 +134,7 @@ export function useSavedAccounts() {
 
   const removeAccount = useCallback(
     (account) => {
-      let index = savedAccounts?.indexOf(account) ?? -1
+      const index = savedAccounts?.indexOf(account) ?? -1
       if (index > -1) {
         updateKey(SAVED_ACCOUNTS, [
           ...savedAccounts.slice(0, index),
@@ -144,7 +153,7 @@ export function useSavedPairs() {
   const savedPairs = state?.[SAVED_PAIRS]
 
   function addPair(address, token0Address, token1Address, token0Symbol, token1Symbol) {
-    let newList = state?.[SAVED_PAIRS]
+    const newList = state?.[SAVED_PAIRS]
     newList[address] = {
       address,
       token0Address,
@@ -156,7 +165,7 @@ export function useSavedPairs() {
   }
 
   function removePair(address) {
-    let newList = state?.[SAVED_PAIRS]
+    const newList = state?.[SAVED_PAIRS]
     newList[address] = null
     updateKey(SAVED_PAIRS, newList)
   }
@@ -169,7 +178,7 @@ export function useSavedTokens() {
   const savedTokens = state?.[SAVED_TOKENS]
 
   function addToken(address, symbol) {
-    let newList = state?.[SAVED_TOKENS]
+    const newList = state?.[SAVED_TOKENS]
     newList[address] = {
       symbol,
     }
@@ -177,7 +186,7 @@ export function useSavedTokens() {
   }
 
   function removeToken(address) {
-    let newList = state?.[SAVED_TOKENS]
+    const newList = state?.[SAVED_TOKENS]
     newList[address] = null
     updateKey(SAVED_TOKENS, newList)
   }
