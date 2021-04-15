@@ -1,43 +1,43 @@
-import React, { useEffect } from 'react'
-import { withRouter } from 'react-router-dom'
 import 'feather-icons'
-import styled from 'styled-components'
-import Panel from '../components/Panel'
-import {
-  PageWrapper,
-  ContentWrapperLarge,
-  StyledIcon,
-  BlockedWrapper,
-  BlockedMessageWrapper,
-} from '../components/index'
-import { AutoRow, RowBetween, RowFixed } from '../components/Row'
-import Column, { AutoColumn } from '../components/Column'
-import { ButtonLight, ButtonDark } from '../components/ButtonStyled'
-import PairChart from '../components/PairChart'
-import Link from '../components/Link'
-import TxnList from '../components/TxnList'
-import Loader from '../components/LocalLoader'
-import { BasicLink } from '../components/Link'
-import Search from '../components/Search'
-import { formattedNum, formattedPercent, getPoolLink, getSwapLink, shortenAddress } from '../utils'
-import { useColor } from '../hooks'
-import { usePairData, usePairTransactions } from '../contexts/PairData'
-import { TYPE, ThemedBackground } from '../Theme'
-import { transparentize } from 'polished'
-import CopyHelper from '../components/Copy'
-import { useMedia } from 'react-use'
-import DoubleTokenLogo from '../components/DoubleLogo'
-import TokenLogo from '../components/TokenLogo'
-import { Hover } from '../components'
-import { useEthPrice } from '../contexts/GlobalData'
-import Warning from '../components/Warning'
-import { usePathDismissed, useSavedPairs } from '../contexts/LocalStorage'
 
-import { Bookmark, PlusCircle, AlertCircle } from 'react-feather'
+import { transparentize } from 'polished'
+import React, { useEffect } from 'react'
+import { AlertCircle, Bookmark, PlusCircle } from 'react-feather'
+import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
+import styled from 'styled-components'
+
+import {
+  BlockedMessageWrapper,
+  BlockedWrapper,
+  ContentWrapperLarge,
+  Hover,
+  PageWrapper,
+  StyledIcon,
+} from '../components'
+import { ButtonDark, ButtonLight } from '../components/ButtonStyled'
+import Column, { AutoColumn } from '../components/Column'
+import CopyHelper from '../components/Copy'
+import DoubleTokenLogo from '../components/DoubleLogo'
 import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
 import HoverText from '../components/HoverText'
-import { UNTRACKED_COPY, PAIR_BLACKLIST, BLOCKED_WARNINGS } from '../constants'
+import Link, { BasicLink } from '../components/Link'
+import Loader from '../components/LocalLoader'
+import PairChart from '../components/PairChart'
+import Panel from '../components/Panel'
+import { AutoRow, RowBetween, RowFixed } from '../components/Row'
+import Search from '../components/Search'
+import TokenLogo from '../components/TokenLogo'
+import TxnList from '../components/TxnList'
+import Warning from '../components/Warning'
+import { BLOCKED_WARNINGS, PAIR_BLACKLIST, UNTRACKED_COPY } from '../constants'
+import { useListedTokens } from '../contexts/Application'
+import { useCeloPrice } from '../contexts/GlobalData'
+import { usePathDismissed, useSavedPairs } from '../contexts/LocalStorage'
+import { usePairData, usePairTransactions } from '../contexts/PairData'
+import { useColor } from '../hooks'
+import { ThemedBackground, TYPE } from '../Theme'
+import { formattedNum, formattedPercent, getPoolLink, getSwapLink, shortenAddress } from '../utils'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -163,12 +163,12 @@ function PairPage({ pairAddress, history }) {
       : '-'
 
   // token data for usd
-  const [ethPrice] = useEthPrice()
+  const [celoPrice] = useCeloPrice()
   const token0USD =
-    token0?.derivedETH && ethPrice ? formattedNum(parseFloat(token0.derivedETH) * parseFloat(ethPrice), true) : ''
+    token0?.derivedETH && celoPrice ? formattedNum(parseFloat(token0.derivedETH) * parseFloat(celoPrice), true) : ''
 
   const token1USD =
-    token1?.derivedETH && ethPrice ? formattedNum(parseFloat(token1.derivedETH) * parseFloat(ethPrice), true) : ''
+    token1?.derivedETH && celoPrice ? formattedNum(parseFloat(token1.derivedETH) * parseFloat(celoPrice), true) : ''
 
   // rates
   const token0Rate = reserve0 && reserve1 ? formattedNum(reserve1 / reserve0) : '-'
@@ -203,9 +203,10 @@ function PairPage({ pairAddress, history }) {
             <TYPE.light style={{ textAlign: 'center' }}>
               {BLOCKED_WARNINGS[pairAddress] ?? `This pair is not supported.`}
             </TYPE.light>
-            <Link external={true} href={'https://etherscan.io/address/' + pairAddress}>{`More about ${shortenAddress(
-              pairAddress
-            )}`}</Link>
+            <Link
+              external={true}
+              href={'https://explorer.celo.org/address/' + pairAddress}
+            >{`More about ${shortenAddress(pairAddress)}`}</Link>
           </AutoColumn>
         </BlockedMessageWrapper>
       </BlockedWrapper>
@@ -500,8 +501,8 @@ function PairPage({ pairAddress, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + pairAddress}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={'https://explorer.celo.org/address/' + pairAddress}>
+                      View on Celo Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

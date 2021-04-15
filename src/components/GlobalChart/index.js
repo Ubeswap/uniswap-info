@@ -1,14 +1,15 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useMedia } from 'react-use'
 import { ResponsiveContainer } from 'recharts'
+
 import { timeframeOptions } from '../../constants'
 import { useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
-import { useMedia } from 'react-use'
-import DropdownSelect from '../DropdownSelect'
-import TradingViewChart, { CHART_TYPES } from '../TradingviewChart'
-import { RowFixed } from '../Row'
-import { OptionButton } from '../ButtonStyled'
-import { getTimeframe } from '../../utils'
 import { TYPE } from '../../Theme'
+import { getTimeframe } from '../../utils'
+import { OptionButton } from '../ButtonStyled'
+import DropdownSelect from '../DropdownSelect'
+import { RowFixed } from '../Row'
+import TradingViewChart, { CHART_TYPES } from '../TradingViewChart'
 
 const CHART_VIEW = {
   VOLUME: 'Volume',

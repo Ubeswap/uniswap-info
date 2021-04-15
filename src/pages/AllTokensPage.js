@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react'
 import 'feather-icons'
 
-import TopTokenList from '../components/TokenList'
-import { TYPE } from '../Theme'
+import React, { useEffect } from 'react'
+import { useMedia } from 'react-use'
+
+import { FullWrapper, PageWrapper } from '../components'
 import Panel from '../components/Panel'
-import { useAllTokenData } from '../contexts/TokenData'
-import { PageWrapper, FullWrapper } from '../components'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import { useMedia } from 'react-use'
+import TopTokenList from '../components/TokenList'
+import { useAllTokenData } from '../contexts/TokenData'
+import { TYPE } from '../Theme'
 
 function AllTokensPage() {
   const allTokens = useAllTokenData()

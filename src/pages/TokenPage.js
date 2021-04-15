@@ -1,40 +1,39 @@
-import React, { useState } from 'react'
 import 'feather-icons'
+
+import { transparentize } from 'polished'
+import React, { useEffect, useState } from 'react'
+import { AlertCircle, Bookmark, PlusCircle } from 'react-feather'
 import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
 import { Text } from 'rebass'
 import styled from 'styled-components'
-import Link from '../components/Link'
-import Panel from '../components/Panel'
-import TokenLogo from '../components/TokenLogo'
-import PairList from '../components/PairList'
-import Loader from '../components/LocalLoader'
-import { AutoRow, RowBetween, RowFixed } from '../components/Row'
-import Column, { AutoColumn } from '../components/Column'
-import { ButtonLight, ButtonDark } from '../components/ButtonStyled'
-import TxnList from '../components/TxnList'
-import TokenChart from '../components/TokenChart'
-import { BasicLink } from '../components/Link'
-import Search from '../components/Search'
-import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber } from '../utils'
-import { useTokenData, useTokenTransactions, useTokenPairs } from '../contexts/TokenData'
-import { TYPE, ThemedBackground } from '../Theme'
-import { transparentize } from 'polished'
-import { useColor } from '../hooks'
-import CopyHelper from '../components/Copy'
-import { useMedia } from 'react-use'
-import { useDataForList } from '../contexts/PairData'
-import { useEffect } from 'react'
-import Warning from '../components/Warning'
-import { usePathDismissed, useSavedTokens } from '../contexts/LocalStorage'
-import { Hover, PageWrapper, ContentWrapper, StyledIcon, BlockedWrapper, BlockedMessageWrapper } from '../components'
-import { PlusCircle, Bookmark, AlertCircle } from 'react-feather'
-import FormattedName from '../components/FormattedName'
-import { useListedTokens } from '../contexts/Application'
-import HoverText from '../components/HoverText'
-import { UNTRACKED_COPY, TOKEN_BLACKLIST, BLOCKED_WARNINGS } from '../constants'
-import QuestionHelper from '../components/QuestionHelper'
+
+import { BlockedMessageWrapper, BlockedWrapper, ContentWrapper, Hover, PageWrapper, StyledIcon } from '../components'
+import { ButtonDark, ButtonLight } from '../components/ButtonStyled'
 import Checkbox from '../components/Checkbox'
-import { shortenAddress } from '../utils'
+import Column, { AutoColumn } from '../components/Column'
+import CopyHelper from '../components/Copy'
+import FormattedName from '../components/FormattedName'
+import HoverText from '../components/HoverText'
+import Link, { BasicLink } from '../components/Link'
+import Loader from '../components/LocalLoader'
+import PairList from '../components/PairList'
+import Panel from '../components/Panel'
+import QuestionHelper from '../components/QuestionHelper'
+import { AutoRow, RowBetween, RowFixed } from '../components/Row'
+import Search from '../components/Search'
+import TokenChart from '../components/TokenChart'
+import TokenLogo from '../components/TokenLogo'
+import TxnList from '../components/TxnList'
+import Warning from '../components/Warning'
+import { BLOCKED_WARNINGS, TOKEN_BLACKLIST, UNTRACKED_COPY } from '../constants'
+import { useListedTokens } from '../contexts/Application'
+import { usePathDismissed, useSavedTokens } from '../contexts/LocalStorage'
+import { useDataForList } from '../contexts/PairData'
+import { useTokenData, useTokenPairs, useTokenTransactions } from '../contexts/TokenData'
+import { useColor } from '../hooks'
+import { ThemedBackground, TYPE } from '../Theme'
+import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -179,7 +178,7 @@ function TokenPage({ address, history }) {
             <TYPE.light style={{ textAlign: 'center' }}>
               {BLOCKED_WARNINGS[address] ?? `This token is not supported.`}
             </TYPE.light>
-            <Link external={true} href={'https://etherscan.io/address/' + address}>{`More about ${shortenAddress(
+            <Link external={true} href={'https://explorer.celo.org/address/' + address}>{`More about ${shortenAddress(
               address
             )}`}</Link>
           </AutoColumn>
@@ -207,7 +206,7 @@ function TokenPage({ address, history }) {
               style={{ width: 'fit-content' }}
               color={backgroundColor}
               external
-              href={'https://etherscan.io/address/' + address}
+              href={'https://explorer.celo.org/address/' + address}
             >
               <Text style={{ marginLeft: '.15rem' }} fontSize={'14px'} fontWeight={400}>
                 ({address.slice(0, 8) + '...' + address.slice(36, 42)})
@@ -230,7 +229,7 @@ function TokenPage({ address, history }) {
                   <TokenLogo address={address} size="32px" style={{ alignSelf: 'center' }} />
                   <TYPE.main fontSize={below1080 ? '1.5rem' : '2rem'} fontWeight={500} style={{ margin: '0 1rem' }}>
                     <RowFixed gap="6px">
-                      <FormattedName text={name ? name + ' ' : ''} maxCharacters={16} style={{ marginRight: '6px' }} />{' '}
+                      <FormattedName text={name ? name + ' ' : ''} maxCharacters={18} style={{ marginRight: '6px' }} />{' '}
                       {formattedSymbol ? `(${formattedSymbol})` : ''}
                     </RowFixed>
                   </TYPE.main>{' '}
@@ -407,7 +406,7 @@ function TokenPage({ address, history }) {
                   <Column>
                     <TYPE.main>Name</TYPE.main>
                     <TYPE.main style={{ marginTop: '.5rem' }} fontSize={24} fontWeight="500">
-                      <FormattedName text={name} maxCharacters={16} />
+                      <FormattedName text={name} maxCharacters={18} />
                     </TYPE.main>
                   </Column>
                   <Column>
@@ -420,8 +419,8 @@ function TokenPage({ address, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + address}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={`https://explorer.celo.org/tokens/${address}`}>
+                      View on Celo Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

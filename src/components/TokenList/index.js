@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import styled from 'styled-components'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-
+import React, { useEffect, useMemo, useState } from 'react'
+import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
-import TokenLogo from '../TokenLogo'
+import styled from 'styled-components'
+
+import { TOKEN_BLACKLIST } from '../../constants'
+import { TYPE } from '../../Theme'
+import { formattedNum, formattedPercent } from '../../utils'
+import { Divider } from '..'
+import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
 import Row from '../Row'
-import { Divider } from '..'
-
-import { formattedNum, formattedPercent } from '../../utils'
-import { useMedia } from 'react-use'
-import { withRouter } from 'react-router-dom'
-import { TOKEN_BLACKLIST } from '../../constants'
-import FormattedName from '../FormattedName'
-import { TYPE } from '../../Theme'
+import TokenLogo from '../TokenLogo'
 
 dayjs.extend(utc)
 
@@ -147,18 +146,9 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
           return !TOKEN_BLACKLIST.includes(key)
         })
         .map((key) => tokens[key])
+        .filter((tok) => tok.totalLiquidityUSD > 0)
     )
   }, [tokens])
-
-  useEffect(() => {
-    if (tokens && formattedTokens) {
-      let extraPages = 1
-      if (formattedTokens.length % itemMax === 0) {
-        extraPages = 0
-      }
-      setMaxPage(Math.floor(formattedTokens.length / itemMax) + extraPages)
-    }
-  }, [tokens, formattedTokens, itemMax])
 
   const filteredList = useMemo(() => {
     return (
@@ -176,6 +166,16 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
     )
   }, [formattedTokens, itemMax, page, sortDirection, sortedColumn])
 
+  useEffect(() => {
+    if (tokens && formattedTokens) {
+      let extraPages = 1
+      if (formattedTokens.length % itemMax === 0) {
+        extraPages = 0
+      }
+      setMaxPage(Math.floor(formattedTokens.length / itemMax) + extraPages)
+    }
+  }, [tokens, formattedTokens, itemMax])
+
   const ListItem = ({ item, index }) => {
     return (
       <DashGrid style={{ height: '48px' }} focus={true}>
@@ -186,7 +186,7 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
             <CustomLink style={{ marginLeft: '16px', whiteSpace: 'nowrap' }} to={'/token/' + item.id}>
               <FormattedName
                 text={below680 ? item.symbol : item.name}
-                maxCharacters={below600 ? 8 : 16}
+                maxCharacters={below600 ? 8 : 19}
                 adjustSize={true}
                 link={true}
               />
@@ -305,15 +305,17 @@ function TopTokenList({ tokens, itemMax = 10, useTracked = false }) {
             )
           })}
       </List>
-      <PageButtons>
-        <div onClick={() => setPage(page === 1 ? page : page - 1)}>
-          <Arrow faded={page === 1 ? true : false}>←</Arrow>
-        </div>
-        <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
-        <div onClick={() => setPage(page === maxPage ? page : page + 1)}>
-          <Arrow faded={page === maxPage ? true : false}>→</Arrow>
-        </div>
-      </PageButtons>
+      {maxPage > 1 && (
+        <PageButtons>
+          <div onClick={() => setPage(page === 1 ? page : page - 1)}>
+            <Arrow faded={page === 1 ? true : false}>←</Arrow>
+          </div>
+          <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
+          <div onClick={() => setPage(page === maxPage ? page : page + 1)}>
+            <Arrow faded={page === maxPage ? true : false}>→</Arrow>
+          </div>
+        </PageButtons>
+      )}
     </ListWrapper>
   )
 }

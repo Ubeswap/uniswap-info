@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
-import Panel from '../Panel'
-import { AutoColumn } from '../Column'
-import { RowFixed } from '../Row'
-import { TYPE } from '../../Theme'
+
 import { usePairData } from '../../contexts/PairData'
+import { TYPE } from '../../Theme'
 import { formattedNum } from '../../utils'
+import { AutoColumn } from '../Column'
+import Panel from '../Panel'
+import { RowFixed } from '../Row'
 
 const PriceCard = styled(Panel)`
   position: absolute;

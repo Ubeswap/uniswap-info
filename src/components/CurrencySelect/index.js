@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
+import { ChevronDown as Arrow } from 'react-feather'
 import styled from 'styled-components'
 
 import { useCurrentCurrency } from '../../contexts/Application'
-
 import Row from '../Row'
-import { ChevronDown as Arrow } from 'react-feather'
 
 const Select = styled.div`
   position: relative;

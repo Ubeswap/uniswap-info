@@ -1,28 +1,27 @@
+import { transparentize } from 'polished'
 import React, { useEffect } from 'react'
 import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
 import { Box } from 'rebass'
 import styled from 'styled-components'
 
-import { AutoRow, RowBetween } from '../components/Row'
+import { ContentWrapper, PageWrapper } from '../components'
 import { AutoColumn } from '../components/Column'
+import GlobalChart from '../components/GlobalChart'
+import GlobalStats from '../components/GlobalStats'
+import { CustomLink } from '../components/Link'
 import PairList from '../components/PairList'
+import Panel from '../components/Panel'
+import { AutoRow, RowBetween } from '../components/Row'
+import Search from '../components/Search'
 import TopTokenList from '../components/TokenList'
 import TxnList from '../components/TxnList'
-import GlobalChart from '../components/GlobalChart'
-import Search from '../components/Search'
-import GlobalStats from '../components/GlobalStats'
-
 import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
+import { useDarkModeManager } from '../contexts/LocalStorage'
 import { useAllPairData } from '../contexts/PairData'
-import { useMedia } from 'react-use'
-import Panel from '../components/Panel'
 import { useAllTokenData } from '../contexts/TokenData'
+import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent } from '../utils'
-import { TYPE, ThemedBackground } from '../Theme'
-import { transparentize } from 'polished'
-import { CustomLink } from '../components/Link'
-
-import { PageWrapper, ContentWrapper } from '../components'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -50,6 +49,7 @@ function GlobalPage() {
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+  const [darkMode] = useDarkModeManager()
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -64,7 +64,10 @@ function GlobalPage() {
 
   return (
     <PageWrapper>
-      <ThemedBackground backgroundColor={transparentize(0.6, '#8878c3')} />
+      <ThemedBackground
+        backgroundColor={transparentize(0.6, '#8878c3')}
+        endColor={transparentize(1, darkMode ? '#212429' : '#FFFFFF')}
+      />
       <ContentWrapper>
         <div>
           <AutoColumn gap="24px" style={{ paddingBottom: below800 ? '0' : '24px' }}>

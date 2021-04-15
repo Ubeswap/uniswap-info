@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { createChart, CrosshairMode } from 'lightweight-charts'
 import dayjs from 'dayjs'
-import { formattedNum } from '../../utils'
+import { createChart, CrosshairMode } from 'lightweight-charts'
+import React, { useEffect, useRef, useState } from 'react'
+import { Play } from 'react-feather'
 import { usePrevious } from 'react-use'
 import styled from 'styled-components'
-import { Play } from 'react-feather'
+
 import { useDarkModeManager } from '../../contexts/LocalStorage'
+import { formattedNum } from '../../utils'
 
 const IconWrapper = styled.div`
   position: absolute;
   right: 10px;
-  color: ${({ theme }) => theme.text1}
+  color: ${({ theme }) => theme.text1};
   border-radius: 3px;
   height: 16px;
   width: 16px;

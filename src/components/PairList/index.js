@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { useMedia } from 'react-use'
+import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 import dayjs from 'dayjs'
-import LocalLoader from '../LocalLoader'
 import utc from 'dayjs/plugin/utc'
+import React, { useEffect, useState } from 'react'
+import { withRouter } from 'react-router-dom'
+import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
-import { CustomLink } from '../Link'
 import { Divider } from '../../components'
-import { withRouter } from 'react-router-dom'
+import { PAIR_BLACKLIST } from '../../constants'
+import { TYPE } from '../../Theme'
 import { formattedNum, formattedPercent } from '../../utils'
+import { isAddress } from '../../utils/index'
+import { AutoColumn } from '../Column'
 import DoubleTokenLogo from '../DoubleLogo'
 import FormattedName from '../FormattedName'
+import { CustomLink } from '../Link'
+import LocalLoader from '../LocalLoader'
 import QuestionHelper from '../QuestionHelper'
-import { TYPE } from '../../Theme'
-import { PAIR_BLACKLIST } from '../../constants'
-import { AutoColumn } from '../Column'
+
+const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
+const ALL_TOKEN_ADDRESSES = new Set([...ALL_TOKENS.map((tok) => tok.address)])
 
 dayjs.extend(utc)
 
@@ -147,11 +152,26 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10, useTracked = fals
   // pagination
   const [page, setPage] = useState(1)
   const [maxPage, setMaxPage] = useState(1)
-  const ITEMS_PER_PAGE = maxItems
 
   // sorting
   const [sortDirection, setSortDirection] = useState(true)
   const [sortedColumn, setSortedColumn] = useState(SORT_FIELD.LIQ)
+
+  const filteredPairs =
+    pairs &&
+    Object.keys(pairs).filter((address) => {
+      // dont filter known tokens out of pair list
+      const pairData = pairs[address]
+      if (
+        ALL_TOKEN_ADDRESSES.has(isAddress(pairData.token0.id)) &&
+        ALL_TOKEN_ADDRESSES.has(isAddress(pairData.token1.id))
+      ) {
+        return true
+      }
+      return !PAIR_BLACKLIST.includes(address) && (useTracked ? !!pairs[address].trackedReserveUSD : true)
+    })
+  const totalItems = filteredPairs.length
+  const ITEMS_PER_PAGE = maxItems
 
   useEffect(() => {
     setMaxPage(1) // edit this to do modular
@@ -161,12 +181,12 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10, useTracked = fals
   useEffect(() => {
     if (pairs) {
       let extraPages = 1
-      if (Object.keys(pairs).length % ITEMS_PER_PAGE === 0) {
+      if (totalItems % ITEMS_PER_PAGE === 0) {
         extraPages = 0
       }
-      setMaxPage(Math.floor(Object.keys(pairs).length / ITEMS_PER_PAGE) + extraPages)
+      setMaxPage(Math.floor(totalItems / ITEMS_PER_PAGE) + extraPages)
     }
-  }, [ITEMS_PER_PAGE, pairs])
+  }, [ITEMS_PER_PAGE, pairs, totalItems])
 
   const ListItem = ({ pairAddress, index }) => {
     const pairData = pairs[pairAddress]
@@ -233,11 +253,8 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10, useTracked = fals
   }
 
   const pairList =
-    pairs &&
-    Object.keys(pairs)
-      .filter(
-        (address) => !PAIR_BLACKLIST.includes(address) && (useTracked ? !!pairs[address].trackedReserveUSD : true)
-      )
+    filteredPairs &&
+    filteredPairs
       .sort((addressA, addressB) => {
         const pairA = pairs[addressA]
         const pairB = pairs[addressB]
@@ -339,23 +356,25 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10, useTracked = fals
       </DashGrid>
       <Divider />
       <List p={0}>{!pairList ? <LocalLoader /> : pairList}</List>
-      <PageButtons>
-        <div
-          onClick={(e) => {
-            setPage(page === 1 ? page : page - 1)
-          }}
-        >
-          <Arrow faded={page === 1 ? true : false}>←</Arrow>
-        </div>
-        <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
-        <div
-          onClick={(e) => {
-            setPage(page === maxPage ? page : page + 1)
-          }}
-        >
-          <Arrow faded={page === maxPage ? true : false}>→</Arrow>
-        </div>
-      </PageButtons>
+      {maxPage > 1 && (
+        <PageButtons>
+          <div
+            onClick={(e) => {
+              setPage(page === 1 ? page : page - 1)
+            }}
+          >
+            <Arrow faded={page === 1 ? true : false}>←</Arrow>
+          </div>
+          <TYPE.body>{'Page ' + page + ' of ' + maxPage}</TYPE.body>
+          <div
+            onClick={(e) => {
+              setPage(page === maxPage ? page : page + 1)
+            }}
+          >
+            <Arrow faded={page === maxPage ? true : false}>→</Arrow>
+          </div>
+        </PageButtons>
+      )}
     </ListWrapper>
   )
 }

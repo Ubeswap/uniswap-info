@@ -1,10 +1,9 @@
 import React from 'react'
+import { Box, Text } from 'rebass'
 import styled from 'styled-components'
-import { Text, Box } from 'rebass'
-
-import Link from './Link'
 
 import { urls } from '../utils'
+import Link from './Link'
 
 const Divider = styled(Box)`
   height: 1px;
@@ -197,4 +196,4 @@ export const FixedMenu = styled.div`
   }
 `
 
-export { Hint, Divider, Address, EmptyCard }
+export { Address, Divider, EmptyCard, Hint }

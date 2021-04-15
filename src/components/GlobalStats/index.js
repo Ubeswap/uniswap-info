@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import { RowFixed, RowBetween } from '../Row'
+import React from 'react'
 import { useMedia } from 'react-use'
-import { useGlobalData, useEthPrice } from '../../contexts/GlobalData'
-import { formattedNum, localNumber } from '../../utils'
+import styled from 'styled-components'
 
-import UniPrice from '../UniPrice'
+import { useCeloPrice, useGlobalData } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
+import { formattedNum, localNumber } from '../../utils'
+import { RowBetween, RowFixed } from '../Row'
 
 const Header = styled.div`
   width: 100%;
@@ -25,11 +24,9 @@ export default function GlobalStats() {
   const below400 = useMedia('(max-width: 400px)')
   const below816 = useMedia('(max-width: 816px)')
 
-  const [showPriceCard, setShowPriceCard] = useState(false)
-
   const { oneDayVolumeUSD, oneDayTxns, pairCount } = useGlobalData()
-  const [ethPrice] = useEthPrice()
-  const formattedEthPrice = ethPrice ? formattedNum(ethPrice, true) : '-'
+  const [celoPrice] = useCeloPrice()
+  const formattedCeloPrice = celoPrice ? formattedNum(celoPrice, true) : '-'
   const oneDayFees = oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD * 0.003, true) : ''
 
   return (
@@ -37,18 +34,8 @@ export default function GlobalStats() {
       <RowBetween style={{ padding: below816 ? '0.5rem' : '.5rem' }}>
         <RowFixed>
           {!below400 && (
-            <TYPE.main
-              mr={'1rem'}
-              onMouseEnter={() => {
-                setShowPriceCard(true)
-              }}
-              onMouseLeave={() => {
-                setShowPriceCard(false)
-              }}
-              style={{ position: 'relative' }}
-            >
-              ETH Price: <Medium>{formattedEthPrice}</Medium>
-              {showPriceCard && <UniPrice />}
+            <TYPE.main mr={'1rem'} style={{ position: 'relative' }}>
+              Celo Price: <Medium>{formattedCeloPrice}</Medium>
             </TYPE.main>
           )}
 

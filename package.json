@@ -3,14 +3,19 @@
   "private": true,
   "homepage": "https://info.ubeswap.org",
   "devDependencies": {
+    "@graphql-codegen/cli": "^1.21.3",
+    "@graphql-codegen/schema-ast": "^1.18.1",
+    "@graphql-codegen/typescript": "^1.21.1",
+    "@graphql-codegen/typescript-operations": "^1.17.15",
     "@popperjs/core": "^2.4.2",
     "@reach/portal": "^0.10.3",
     "@reach/router": "^1.2.1",
     "@types/jest": "^26.0.0",
     "@types/node": "^14.0.13",
-    "@types/react": "^16.9.36",
-    "@types/react-dom": "^16.9.8",
-    "@types/styled-components": "^5.1.0",
+    "@types/numeral": "^2.0.1",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/styled-components": "^5.1.9",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "@typescript-eslint/parser": "^4.4.0",
     "@uniswap/token-lists": "^1.0.0-beta.15",
@@ -27,9 +32,12 @@
     "es-abstract": "^1.14.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.12.0",
+    "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.3",
     "eslint-plugin-react-hooks": "^4.1.2",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-unused-imports": "^1.1.1",
     "ethers": "^4.0.39",
     "export-to-csv": "^0.2.1",
     "feather-icons": "^4.24.1",
@@ -63,7 +71,7 @@
     "rebass": "^4.0.7",
     "recharts": "^1.7.1",
     "recharts-fork": "^1.7.2",
-    "styled-components": "^4.3.2",
+    "styled-components": "^5.2.3",
     "toformat": "^2.0.0",
     "typeface-inter": "^3.10.0",
     "typescript": "^3.9.5",
@@ -71,10 +79,14 @@
     "wcag-contrast": "^3.0.0"
   },
   "scripts": {
+    "codegen:local": "graphql-codegen",
+    "pull-schema": "graphql-codegen -c codegen-schema.yml",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI='' graphql-codegen && react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
+    "lint:fix": "eslint './**/*.{ts,tsx,js,jsx}' --fix"
   },
   "browserslist": {
     "production": [
@@ -88,5 +100,14 @@
       "last 1 safari version"
     ]
   },
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@ubeswap/default-token-list": "^0.4.3",
+    "@ubeswap/subgraph": "^1.0.0"
+  },
+  "resolutions": {
+    "@types/react": "^17.0.3",
+    "**/@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3"
+  }
 }

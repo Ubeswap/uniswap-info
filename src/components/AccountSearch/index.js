@@ -1,19 +1,19 @@
-import React, { useState } from 'react'
 import 'feather-icons'
-import { withRouter } from 'react-router-dom'
-import styled from 'styled-components'
-import { ButtonLight, ButtonFaded } from '../ButtonStyled'
-import { AutoRow, RowBetween } from '../Row'
-import { isAddress } from '../../utils'
-import { useSavedAccounts } from '../../contexts/LocalStorage'
-import { AutoColumn } from '../Column'
-import { TYPE } from '../../Theme'
-import { Hover, StyledIcon } from '..'
-import Panel from '../Panel'
-import { Divider } from '..'
-import { Flex } from 'rebass'
 
+import React, { useState } from 'react'
 import { X } from 'react-feather'
+import { withRouter } from 'react-router-dom'
+import { Flex } from 'rebass'
+import styled from 'styled-components'
+
+import { useSavedAccounts } from '../../contexts/LocalStorage'
+import { TYPE } from '../../Theme'
+import { isAddress } from '../../utils'
+import { Divider, Hover, StyledIcon } from '..'
+import { ButtonFaded, ButtonLight } from '../ButtonStyled'
+import { AutoColumn } from '../Column'
+import Panel from '../Panel'
+import { AutoRow, RowBetween } from '../Row'
 
 const Wrapper = styled.div`
   display: flex;

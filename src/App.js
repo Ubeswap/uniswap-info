@@ -1,24 +1,24 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
 import { ApolloProvider } from 'react-apollo'
-import { client } from './apollo/client'
-import { Route, Switch, BrowserRouter, Redirect } from 'react-router-dom'
-import GlobalPage from './pages/GlobalPage'
-import TokenPage from './pages/TokenPage'
-import PairPage from './pages/PairPage'
-import { useGlobalData, useGlobalChartData } from './contexts/GlobalData'
-import { isAddress } from './utils'
-import AccountPage from './pages/AccountPage'
-import AllTokensPage from './pages/AllTokensPage'
-import AllPairsPage from './pages/AllPairsPage'
-import PinnedData from './components/PinnedData'
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom'
+import styled from 'styled-components'
 
-import SideNav from './components/SideNav'
-import AccountLookup from './pages/AccountLookup'
-import LocalLoader from './components/LocalLoader'
-import { useLatestBlocks } from './contexts/Application'
+import { client } from './apollo/client'
 import GoogleAnalyticsReporter from './components/analytics/GoogleAnalyticsReporter'
+import LocalLoader from './components/LocalLoader'
+import PinnedData from './components/PinnedData'
+import SideNav from './components/SideNav'
 import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from './constants'
+import { useLatestBlocks } from './contexts/Application'
+import { useGlobalChartData, useGlobalData } from './contexts/GlobalData'
+import AccountLookup from './pages/AccountLookup'
+import AccountPage from './pages/AccountPage'
+import AllPairsPage from './pages/AllPairsPage'
+import AllTokensPage from './pages/AllTokensPage'
+import GlobalPage from './pages/GlobalPage'
+import PairPage from './pages/PairPage'
+import TokenPage from './pages/TokenPage'
+import { isAddress } from './utils'
 
 const AppWrapper = styled.div`
   position: relative;
@@ -98,6 +98,7 @@ const BLOCK_DIFFERENCE_THRESHOLD = 30
 function App() {
   const [savedOpen, setSavedOpen] = useState(false)
 
+  // TODO(igm): add when historical blocks are fixed
   const globalData = useGlobalData()
   const globalChartData = useGlobalChartData()
   const [latestBlock, headBlock] = useLatestBlocks()
