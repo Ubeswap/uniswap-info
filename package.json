@@ -77,7 +77,7 @@
   "scripts": {
     "codegen": "graphql-codegen",
     "start": "react-scripts start",
-    "build": "npm run graphql-codegen && react-scripts build",
+    "build": "npm run codegen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
