@@ -4,6 +4,7 @@
   "homepage": "https://info.ubeswap.org",
   "devDependencies": {
     "@graphql-codegen/cli": "^1.21.3",
+    "@graphql-codegen/schema-ast": "^1.18.1",
     "@graphql-codegen/typescript": "^1.21.1",
     "@graphql-codegen/typescript-operations": "^1.17.15",
     "@popperjs/core": "^2.4.2",
@@ -78,9 +79,10 @@
     "wcag-contrast": "^3.0.0"
   },
   "scripts": {
-    "codegen": "graphql-codegen",
+    "codegen:local": "graphql-codegen",
+    "pull-schema": "graphql-codegen -c codegen-schema.yml",
     "start": "react-scripts start",
-    "build": "CI='' npm run codegen && react-scripts build",
+    "build": "CI='' npm run codegen:local && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
