@@ -607,11 +607,10 @@ async function getAllTokensOnUbeswap() {
 /**
  * Hook that fetches overview data, plus all tokens and pairs for search
  */
-export function useGlobalData() {
+export function useGlobalData(): Partial<IGlobalData> {
   const [state, { update, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
-  const [celoPrice, oldCeloPrice] = useCeloPrice()
 
-  const data = state?.globalData
+  const data: IGlobalData | undefined = state?.globalData
 
   useEffect(() => {
     async function fetchData() {
@@ -625,10 +624,10 @@ export function useGlobalData() {
       const allTokens = await getAllTokensOnUbeswap()
       updateAllTokensInUbeswap(allTokens)
     }
-    if (!data && celoPrice) {
+    if (!data) {
       fetchData()
     }
-  }, [celoPrice, oldCeloPrice, update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+  }, [update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
 
   return data || {}
 }
