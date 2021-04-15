@@ -314,7 +314,7 @@ export const urls = {
   showBlock: (block): string => `https://explorer.celo.org/block/${block}/`,
 }
 
-export const formatTime = (unix) => {
+export const formatTime = (unix: number): string => {
   const now = dayjs()
   const timestamp = dayjs.unix(unix)
 
