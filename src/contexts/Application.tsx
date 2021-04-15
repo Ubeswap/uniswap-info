@@ -250,7 +250,7 @@ export function useStartTimestamp() {
         .utc()
         .subtract(
           1,
-          activeWindow === timeframeOptions.week ? 'week' : activeWindow === timeframeOptions.ALL_TIME ? 'year' : 'year'
+          activeWindow === timeframeOptions.WEEK ? 'week' : activeWindow === timeframeOptions.ALL_TIME ? 'year' : 'year'
         )
         .startOf('day')
         .unix() - 1
