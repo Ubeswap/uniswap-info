@@ -156,7 +156,7 @@ export const ThemedBackground = styled.div<{ backgroundColor: string; endColor?:
 
 export const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-  html { font-family: 'Inter', sans-serif; }
+  * { font-family: 'Inter', sans-serif; }
   
   html,
   body {
