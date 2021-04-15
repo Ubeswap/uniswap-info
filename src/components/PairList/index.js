@@ -5,7 +5,9 @@ import LocalLoader from '../LocalLoader'
 import utc from 'dayjs/plugin/utc'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
+import { isAddress } from '../../utils/index'
 
+import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 import { CustomLink } from '../Link'
 import { Divider } from '../../components'
 import { withRouter } from 'react-router-dom'
@@ -16,6 +18,9 @@ import QuestionHelper from '../QuestionHelper'
 import { TYPE } from '../../Theme'
 import { PAIR_BLACKLIST } from '../../constants'
 import { AutoColumn } from '../Column'
+
+const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
+const ALL_TOKEN_ADDRESSES = new Set([...ALL_TOKENS.map((tok) => tok.address)])
 
 dayjs.extend(utc)
 
@@ -235,9 +240,17 @@ function PairList({ pairs, color, disbaleLinks, maxItems = 10, useTracked = fals
   const pairList =
     pairs &&
     Object.keys(pairs)
-      .filter(
-        (address) => !PAIR_BLACKLIST.includes(address) && (useTracked ? !!pairs[address].trackedReserveUSD : true)
-      )
+      .filter((address) => {
+        // dont filter known tokens out of pair list
+        const pairData = pairs[address]
+        if (
+          ALL_TOKEN_ADDRESSES.has(isAddress(pairData.token0.id)) &&
+          ALL_TOKEN_ADDRESSES.has(isAddress(pairData.token1.id))
+        ) {
+          return true
+        }
+        return !PAIR_BLACKLIST.includes(address) && (useTracked ? !!pairs[address].trackedReserveUSD : true)
+      })
       .sort((addressA, addressB) => {
         const pairA = pairs[addressA]
         const pairB = pairs[addressB]
