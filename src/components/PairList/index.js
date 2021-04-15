@@ -7,7 +7,6 @@ import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 import { isAddress } from '../../utils/index'
 
-import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 import { CustomLink } from '../Link'
 import { Divider } from '../../components'
 import { withRouter } from 'react-router-dom'
@@ -19,6 +18,7 @@ import { TYPE } from '../../Theme'
 import { PAIR_BLACKLIST } from '../../constants'
 import { AutoColumn } from '../Column'
 
+import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
 const ALL_TOKEN_ADDRESSES = new Set([...ALL_TOKENS.map((tok) => tok.address)])
 

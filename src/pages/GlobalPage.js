@@ -20,6 +20,7 @@ import { useAllPairData } from '../contexts/PairData'
 import { useAllTokenData } from '../contexts/TokenData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent } from '../utils'
+import { useDarkModeManager } from '../contexts/LocalStorage'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -47,6 +48,7 @@ function GlobalPage() {
   const allTokens = useAllTokenData()
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+  const [darkMode] = useDarkModeManager()
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -61,7 +63,10 @@ function GlobalPage() {
 
   return (
     <PageWrapper>
-      <ThemedBackground backgroundColor={transparentize(0.6, '#8878c3')} />
+      <ThemedBackground
+        backgroundColor={transparentize(0.6, '#8878c3')}
+        endColor={transparentize(1, darkMode ? '#212429' : '#FFFFFF')}
+      />
       <ContentWrapper>
         <div>
           <AutoColumn gap="24px" style={{ paddingBottom: below800 ? '0' : '24px' }}>

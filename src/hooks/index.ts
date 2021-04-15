@@ -5,12 +5,13 @@ import { hex } from 'wcag-contrast'
 import { isAddress } from '../utils'
 import copy from 'copy-to-clipboard'
 
-export function useColor(tokenAddress, token) {
+import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
+const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
+
+export function useColor(tokenAddress: string, token: string): string {
   const [color, setColor] = useState('#2172E5')
   if (tokenAddress) {
-    const path = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${isAddress(
-      tokenAddress
-    )}/logo.png`
+    const path = ALL_TOKENS.find((tok) => tok.address === isAddress(tokenAddress))?.logoURI
     if (path) {
       Vibrant.from(path).getPalette((err, palette) => {
         if (palette && palette.Vibrant) {
