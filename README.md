@@ -8,16 +8,19 @@ Analytics site for the [Ubeswap Protocol](https://ubeswap.org).
 ### To Start Development
 
 ###### Installing dependencies
+
 ```bash
 yarn
 ```
 
 ###### Running locally
+
 ```bash
 yarn start
 ```
 
 ### TODOs
-In addition to marked TODOs in the code:
- - Etherscan links need to be https://explorer.celo.org/
 
+In addition to marked TODOs in the code:
+
+- Celo Explorer links need to be https://explorer.celo.org/

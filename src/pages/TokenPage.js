@@ -179,7 +179,7 @@ function TokenPage({ address, history }) {
             <TYPE.light style={{ textAlign: 'center' }}>
               {BLOCKED_WARNINGS[address] ?? `This token is not supported.`}
             </TYPE.light>
-            <Link external={true} href={'https://etherscan.io/address/' + address}>{`More about ${shortenAddress(
+            <Link external={true} href={'https://explorer.celo.org/address/' + address}>{`More about ${shortenAddress(
               address
             )}`}</Link>
           </AutoColumn>
@@ -207,7 +207,7 @@ function TokenPage({ address, history }) {
               style={{ width: 'fit-content' }}
               color={backgroundColor}
               external
-              href={'https://etherscan.io/address/' + address}
+              href={'https://explorer.celo.org/address/' + address}
             >
               <Text style={{ marginLeft: '.15rem' }} fontSize={'14px'} fontWeight={400}>
                 ({address.slice(0, 8) + '...' + address.slice(36, 42)})
@@ -230,7 +230,7 @@ function TokenPage({ address, history }) {
                   <TokenLogo address={address} size="32px" style={{ alignSelf: 'center' }} />
                   <TYPE.main fontSize={below1080 ? '1.5rem' : '2rem'} fontWeight={500} style={{ margin: '0 1rem' }}>
                     <RowFixed gap="6px">
-                      <FormattedName text={name ? name + ' ' : ''} maxCharacters={16} style={{ marginRight: '6px' }} />{' '}
+                      <FormattedName text={name ? name + ' ' : ''} maxCharacters={18} style={{ marginRight: '6px' }} />{' '}
                       {formattedSymbol ? `(${formattedSymbol})` : ''}
                     </RowFixed>
                   </TYPE.main>{' '}
@@ -407,7 +407,7 @@ function TokenPage({ address, history }) {
                   <Column>
                     <TYPE.main>Name</TYPE.main>
                     <TYPE.main style={{ marginTop: '.5rem' }} fontSize={24} fontWeight="500">
-                      <FormattedName text={name} maxCharacters={16} />
+                      <FormattedName text={name} maxCharacters={18} />
                     </TYPE.main>
                   </Column>
                   <Column>
@@ -420,8 +420,8 @@ function TokenPage({ address, history }) {
                     </AutoRow>
                   </Column>
                   <ButtonLight color={backgroundColor}>
-                    <Link color={backgroundColor} external href={'https://etherscan.io/address/' + address}>
-                      View on Etherscan ↗
+                    <Link color={backgroundColor} external href={`https://explorer.celo.org/tokens/${address}`}>
+                      View on Celo Explorer ↗
                     </Link>
                   </ButtonLight>
                 </TokenDetailsLayout>

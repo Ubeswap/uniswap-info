@@ -308,10 +308,10 @@ export const setThemeColor = (theme) => document.documentElement.style.setProper
 export const Big = (number) => new BigNumber(number)
 
 export const urls = {
-  showTransaction: (tx) => `https://etherscan.io/tx/${tx}/`,
-  showAddress: (address) => `https://www.etherscan.io/address/${address}/`,
-  showToken: (address) => `https://www.etherscan.io/token/${address}/`,
-  showBlock: (block) => `https://etherscan.io/block/${block}/`,
+  showTransaction: (tx) => `https://explorer.celo.org/tx/${tx}/`,
+  showAddress: (address) => `https://explorer.celo.org/address/${address}/`,
+  showToken: (address) => `https://explorer.celo.org/token/${address}/`,
+  showBlock: (block) => `https://explorer.celo.org/block/${block}/`,
 }
 
 export const formatTime = (unix) => {
