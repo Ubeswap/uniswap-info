@@ -80,7 +80,7 @@
   "scripts": {
     "codegen": "graphql-codegen",
     "start": "react-scripts start",
-    "build": "npm run codegen && react-scripts build",
+    "build": "CI='' npm run codegen && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
