@@ -14,7 +14,7 @@
     "@types/numeral": "^2.0.1",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
-    "@types/styled-components": "^5.1.0",
+    "@types/styled-components": "^5.1.9",
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "@typescript-eslint/parser": "^4.4.0",
     "@uniswap/token-lists": "^1.0.0-beta.15",
@@ -67,7 +67,7 @@
     "rebass": "^4.0.7",
     "recharts": "^1.7.1",
     "recharts-fork": "^1.7.2",
-    "styled-components": "^4.3.2",
+    "styled-components": "^5.2.3",
     "toformat": "^2.0.0",
     "typeface-inter": "^3.10.0",
     "typescript": "^3.9.5",
@@ -95,6 +95,12 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "@ubeswap/default-token-list": "^0.4.3",
     "@ubeswap/subgraph": "^1.0.0"
+  },
+  "resolutions": {
+    "@types/react": "^17.0.3",
+    "**/@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3"
   }
 }
