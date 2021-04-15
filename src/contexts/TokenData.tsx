@@ -10,6 +10,8 @@ import {
   TokenDataLatestQueryVariables,
   TokenDataQuery,
   TokenDataQueryVariables,
+  TokenDayDatasQuery,
+  TokenDayDatasQueryVariables,
   TokensCurrentQuery,
   TokensDynamicQuery,
   TokensDynamicQueryVariables,
@@ -571,11 +573,11 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
     const values = []
     for (const row in result) {
       const timestamp = row.split('t')[1]
-      const derivedETH = parseFloat(result[row]?.derivedETH)
+      const derivedCUSD = parseFloat(result[row]?.derivedCUSD)
       if (timestamp) {
         values.push({
           timestamp,
-          derivedETH,
+          derivedCUSD,
         })
       }
     }
@@ -585,7 +587,7 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
     for (const brow in result) {
       const timestamp = brow.split('b')[1]
       if (timestamp) {
-        values[index].priceUSD = result[brow].celoPrice * values[index].derivedETH
+        values[index].priceUSD = values[index].derivedCUSD
         index += 1
       }
     }
@@ -609,8 +611,17 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
   }
 }
 
-const getTokenChartData = async (tokenAddress) => {
-  let data = []
+interface TokenChartDatum {
+  date: number
+  dayString: string
+  dailyVolumeUSD: number
+  priceUSD: string
+  totalLiquidityUSD: string
+}
+
+const getTokenChartData = async (tokenAddress: string): Promise<readonly TokenChartDatum[]> => {
+  let fetchedData: TokenDayDatasQuery['tokenDayDatas'] = []
+  let resultData: TokenChartDatum[] = []
   const utcEndTime = dayjs.utc()
   const utcStartTime = utcEndTime.subtract(1, 'year')
   const startTime = utcStartTime.startOf('minute').unix() - 1
@@ -619,7 +630,7 @@ const getTokenChartData = async (tokenAddress) => {
     let allFound = false
     let skip = 0
     while (!allFound) {
-      const result = await client.query({
+      const result = await client.query<TokenDayDatasQuery, TokenDayDatasQueryVariables>({
         query: TOKEN_CHART,
         variables: {
           tokenAddr: tokenAddress,
@@ -631,50 +642,46 @@ const getTokenChartData = async (tokenAddress) => {
         allFound = true
       }
       skip += 1000
-      data = data.concat(result.data.tokenDayDatas)
+      fetchedData = fetchedData.concat(result.data.tokenDayDatas)
     }
 
     const dayIndexSet = new Set()
-    const dayIndexArray = []
+    const dayIndexArray = fetchedData.slice()
     const oneDay = 24 * 60 * 60
-    data.forEach((dayData, i) => {
-      // add the day index to the set of days
-      dayIndexSet.add((data[i].date / oneDay).toFixed(0))
-      dayIndexArray.push(data[i])
-      dayData.dailyVolumeUSD = parseFloat(dayData.dailyVolumeUSD)
+
+    resultData = fetchedData.map((dayData) => {
+      dayIndexSet.add((dayData.date / oneDay).toFixed(0))
+      return { ...dayData, dayString: '', dailyVolumeUSD: parseFloat(dayData.dailyVolumeUSD) }
     })
 
     // fill in empty days
-    let timestamp = data[0] && data[0].date ? data[0].date : startTime
-    let latestLiquidityUSD = data[0] && data[0].totalLiquidityUSD
-    let latestPriceUSD = data[0] && data[0].priceUSD
-    let latestPairDatas = data[0] && data[0].mostLiquidPairs
+    let timestamp = resultData[0] && resultData[0].date ? resultData[0].date : startTime
+    let latestLiquidityUSD = resultData[0] && resultData[0].totalLiquidityUSD
+    let latestPriceUSD = resultData[0] && resultData[0].priceUSD
     let index = 1
     while (timestamp < utcEndTime.startOf('minute').unix() - oneDay) {
       const nextDay = timestamp + oneDay
       const currentDayIndex = (nextDay / oneDay).toFixed(0)
       if (!dayIndexSet.has(currentDayIndex)) {
-        data.push({
+        resultData.push({
           date: nextDay,
-          dayString: nextDay,
+          dayString: nextDay.toString(),
           dailyVolumeUSD: 0,
           priceUSD: latestPriceUSD,
           totalLiquidityUSD: latestLiquidityUSD,
-          mostLiquidPairs: latestPairDatas,
         })
       } else {
         latestLiquidityUSD = dayIndexArray[index].totalLiquidityUSD
         latestPriceUSD = dayIndexArray[index].priceUSD
-        latestPairDatas = dayIndexArray[index].mostLiquidPairs
         index = index + 1
       }
       timestamp = nextDay
     }
-    data = data.sort((a, b) => (parseInt(a.date) > parseInt(b.date) ? 1 : -1))
+    resultData = resultData.sort((a, b) => (a.date > b.date ? 1 : -1))
   } catch (e) {
     console.log(e)
   }
-  return data
+  return resultData
 }
 
 export function Updater() {

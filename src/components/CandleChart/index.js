@@ -11,7 +11,7 @@ import { formattedNum } from '../../utils'
 const IconWrapper = styled.div`
   position: absolute;
   right: 10px;
-  color: ${({ theme }) => theme.text1}
+  color: ${({ theme }) => theme.text1};
   border-radius: 3px;
   height: 16px;
   width: 16px;
