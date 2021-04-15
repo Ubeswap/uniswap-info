@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+
 import { client } from '../apollo/client'
 import {
   FilteredTransactionsQuery,
@@ -15,11 +16,11 @@ import {
 import {
   FILTERED_TRANSACTIONS,
   HOURLY_PAIR_RATES,
+  PAIR_CHART,
+  PAIR_DATA,
   PAIRS_BULK,
   PAIRS_CURRENT,
   PAIRS_HISTORICAL_BULK,
-  PAIR_CHART,
-  PAIR_DATA,
 } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 import {

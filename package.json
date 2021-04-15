@@ -82,7 +82,9 @@
     "start": "react-scripts start",
     "build": "npm run codegen && react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
+    "lint:fix": "eslint './**/*.{ts,tsx,js,jsx}' --fix"
   },
   "browserslist": {
     "production": [

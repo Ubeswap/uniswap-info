@@ -27,12 +27,12 @@ module.exports = {
     'prettier/prettier': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     // imports stuff
-    'import/first': 'warn',
-    'import/newline-after-import': 'warn',
-    'import/no-duplicates': 'warn',
+    'import/first': 'error',
+    'import/newline-after-import': 'error',
+    'import/no-duplicates': 'error',
     'import/order': 'off',
-    'simple-import-sort/exports': 'warn',
-    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'error',
+    'simple-import-sort/imports': 'error',
     'unused-imports/no-unused-imports': 'error',
   },
 }

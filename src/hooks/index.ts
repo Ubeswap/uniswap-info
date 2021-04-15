@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { shade } from 'polished'
-import Vibrant from 'node-vibrant'
-import { hex } from 'wcag-contrast'
-import { isAddress } from '../utils'
-import copy from 'copy-to-clipboard'
-
 import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
+import copy from 'copy-to-clipboard'
+import Vibrant from 'node-vibrant'
+import { shade } from 'polished'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { hex } from 'wcag-contrast'
+
+import { isAddress } from '../utils'
+
 const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
 
 export function useColor(tokenAddress: string, token: string): string {

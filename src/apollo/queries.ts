@@ -1,7 +1,6 @@
 // TODO: Update graphs schema names with ubeswap
-import { DocumentNode, visit } from 'graphql'
+import { DocumentNode } from 'graphql'
 import gql from 'graphql-tag'
-import { BUNDLE_ID, FACTORY_ADDRESS } from '../constants'
 
 export const SUBGRAPH_HEALTH = gql`
   query Health {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useMemo, useCallback, useEffect } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
 
 const UBESWAP = 'UBESWAP'
 

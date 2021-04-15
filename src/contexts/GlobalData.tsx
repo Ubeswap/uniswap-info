@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
+
 import { client } from '../apollo/client'
 import {
   CeloPriceQuery,
@@ -12,7 +13,6 @@ import {
   GlobalDataQuery,
   GlobalDataQueryVariables,
   GlobalTransactionsQuery,
-  Mint,
 } from '../apollo/generated/types'
 import {
   ALL_PAIRS,
@@ -36,6 +36,7 @@ import {
 import { useTimeframe } from './Application'
 import { useAllPairData } from './PairData'
 import { useTokenChartDataCombined } from './TokenData'
+
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
 const UPDATE_CHART = 'UPDATE_CHART'

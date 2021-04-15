@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import styled from 'styled-components'
-import { isAddress } from '../../utils/index'
 import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
+
+import { isAddress } from '../../utils/index'
 
 const BAD_IMAGES = {}
 

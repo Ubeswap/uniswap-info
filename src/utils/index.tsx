@@ -7,6 +7,7 @@ import Numeral from 'numeral'
 import React from 'react'
 import { Text } from 'rebass'
 import toFormat from 'toformat'
+
 import { blockClient, client } from '../apollo/client'
 import { GetBlockQuery, GetBlockQueryVariables } from '../apollo/generated/types'
 import { GET_BLOCK, GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
@@ -307,10 +308,10 @@ export const setThemeColor = (theme) => document.documentElement.style.setProper
 export const Big = (number) => new BigNumber(number)
 
 export const urls = {
-  showTransaction: (tx) => `https://explorer.celo.org/tx/${tx}/`,
-  showAddress: (address) => `https://explorer.celo.org/address/${address}/`,
-  showToken: (address) => `https://explorer.celo.org/token/${address}/`,
-  showBlock: (block) => `https://explorer.celo.org/block/${block}/`,
+  showTransaction: (tx): string => `https://explorer.celo.org/tx/${tx}/`,
+  showAddress: (address): string => `https://explorer.celo.org/address/${address}/`,
+  showToken: (address): string => `https://explorer.celo.org/token/${address}/`,
+  showBlock: (block): string => `https://explorer.celo.org/block/${block}/`,
 }
 
 export const formatTime = (unix) => {
