@@ -4,13 +4,13 @@ import styled, { createGlobalStyle, ThemeProvider as StyledComponentsThemeProvid
 
 import { useDarkModeManager } from '../contexts/LocalStorage'
 
-export default function ThemeProvider({ children }) {
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [darkMode] = useDarkModeManager()
 
   return <StyledComponentsThemeProvider theme={theme(darkMode)}>{children}</StyledComponentsThemeProvider>
 }
 
-const theme = (darkMode, color) => ({
+const theme = (darkMode: boolean, color?: string) => ({
   customColor: color,
   textColor: darkMode ? color : 'black',
 
@@ -104,7 +104,7 @@ export const TYPE = {
     return <TextWrapper fontWeight={400} color={'text3'} fontSize={14} {...props} />
   },
 
-  pink(props) {
+  pink(props: { faded?: boolean }) {
     return <TextWrapper fontWeight={props.faded ? 400 : 600} color={props.faded ? 'text1' : 'text1'} {...props} />
   },
 }
@@ -135,7 +135,7 @@ export const Link = styled.a.attrs({
   }
 `
 
-export const ThemedBackground = styled.div`
+export const ThemedBackground = styled.div<{ backgroundColor: string; endColor?: string }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -165,7 +165,7 @@ export const GlobalStyle = createGlobalStyle`
     width: 100%;
     height: 100%;
     font-size: 14px;    
-    background-color: ${({ theme }) => theme.bg6};
+    background-color: ${({ theme }) => (theme as any).bg6};
   }
 
   a {

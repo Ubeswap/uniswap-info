@@ -34,7 +34,7 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
   ReactGA.initialize('test', { testMode: true, debug: true })
 }
 
-function ContextProviders({ children }) {
+function ContextProviders({ children }: { children: React.ReactNode }) {
   return (
     <LocalStorageContextProvider>
       <ApplicationContextProvider>
