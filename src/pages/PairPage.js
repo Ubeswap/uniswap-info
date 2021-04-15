@@ -1,24 +1,26 @@
 import 'feather-icons'
+
 import { transparentize } from 'polished'
 import React, { useEffect } from 'react'
 import { AlertCircle, Bookmark, PlusCircle } from 'react-feather'
 import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import styled from 'styled-components'
-import { Hover } from '../components'
+
+import {
+  BlockedMessageWrapper,
+  BlockedWrapper,
+  ContentWrapperLarge,
+  Hover,
+  PageWrapper,
+  StyledIcon,
+} from '../components'
 import { ButtonDark, ButtonLight } from '../components/ButtonStyled'
 import Column, { AutoColumn } from '../components/Column'
 import CopyHelper from '../components/Copy'
 import DoubleTokenLogo from '../components/DoubleLogo'
 import FormattedName from '../components/FormattedName'
 import HoverText from '../components/HoverText'
-import {
-  BlockedMessageWrapper,
-  BlockedWrapper,
-  ContentWrapperLarge,
-  PageWrapper,
-  StyledIcon,
-} from '../components/index'
 import Link, { BasicLink } from '../components/Link'
 import Loader from '../components/LocalLoader'
 import PairChart from '../components/PairChart'

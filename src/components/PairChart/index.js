@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react'
-import styled from 'styled-components'
-import { Area, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, BarChart, Bar } from 'recharts'
-import { RowBetween, AutoRow } from '../Row'
-
-import { toK, toNiceDate, toNiceDateYear, formattedNum, getTimeframe } from '../../utils'
-import { OptionButton } from '../ButtonStyled'
 import { darken } from 'polished'
-import { usePairChartData, useHourlyRateData, usePairData } from '../../contexts/PairData'
-import { timeframeOptions } from '../../constants'
+import React, { useEffect, useRef, useState } from 'react'
 import { useMedia } from 'react-use'
-import { EmptyCard } from '..'
-import DropdownSelect from '../DropdownSelect'
-import CandleStickChart from '../CandleChart'
-import LocalLoader from '../LocalLoader'
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import styled from 'styled-components'
+
+import { timeframeOptions } from '../../constants'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
+import { useHourlyRateData, usePairChartData, usePairData } from '../../contexts/PairData'
+import { formattedNum, getTimeframe, toK, toNiceDate, toNiceDateYear } from '../../utils'
+import { EmptyCard } from '..'
+import { OptionButton } from '../ButtonStyled'
+import CandleStickChart from '../CandleChart'
+import DropdownSelect from '../DropdownSelect'
+import LocalLoader from '../LocalLoader'
+import { AutoRow, RowBetween } from '../Row'
 
 const ChartWrapper = styled.div`
   height: 100%;

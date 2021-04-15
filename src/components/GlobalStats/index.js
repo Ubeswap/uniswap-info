@@ -1,6 +1,7 @@
 import React from 'react'
 import { useMedia } from 'react-use'
 import styled from 'styled-components'
+
 import { useCeloPrice, useGlobalData } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
 import { formattedNum, localNumber } from '../../utils'

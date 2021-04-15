@@ -1,4 +1,5 @@
 import 'feather-icons'
+
 import { transparentize } from 'polished'
 import React, { useEffect, useState } from 'react'
 import { AlertCircle, Bookmark, PlusCircle } from 'react-feather'
@@ -6,6 +7,7 @@ import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import { Text } from 'rebass'
 import styled from 'styled-components'
+
 import { BlockedMessageWrapper, BlockedWrapper, ContentWrapper, Hover, PageWrapper, StyledIcon } from '../components'
 import { ButtonDark, ButtonLight } from '../components/ButtonStyled'
 import Checkbox from '../components/Checkbox'

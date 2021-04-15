@@ -1,18 +1,18 @@
 import React, { useState } from 'react'
-import styled from 'styled-components'
-import { XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, CartesianGrid } from 'recharts'
-import { AutoRow, RowBetween } from '../Row'
-
-import { toK, toNiceDate, toNiceDateYear, formattedNum, getTimeframe } from '../../utils'
-import { OptionButton } from '../ButtonStyled'
 import { useMedia } from 'react-use'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import styled from 'styled-components'
+
 import { timeframeOptions } from '../../constants'
-import DropdownSelect from '../DropdownSelect'
-import { useUserPositionChart } from '../../contexts/User'
 import { useTimeframe } from '../../contexts/Application'
-import LocalLoader from '../LocalLoader'
-import { useColor } from '../../hooks'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
+import { useUserPositionChart } from '../../contexts/User'
+import { useColor } from '../../hooks'
+import { formattedNum, getTimeframe, toK, toNiceDate, toNiceDateYear } from '../../utils'
+import { OptionButton } from '../ButtonStyled'
+import DropdownSelect from '../DropdownSelect'
+import LocalLoader from '../LocalLoader'
+import { AutoRow, RowBetween } from '../Row'
 
 const ChartWrapper = styled.div`
   max-height: 420px;

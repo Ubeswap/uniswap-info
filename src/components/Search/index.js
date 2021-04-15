@@ -1,24 +1,22 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { transparentize } from 'polished'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Search as SearchIcon, X } from 'react-feather'
+import { useMedia } from 'react-use'
 import styled from 'styled-components'
 
-import Row, { RowFixed } from '../Row'
-import TokenLogo from '../TokenLogo'
-import { Search as SearchIcon, X } from 'react-feather'
-import { BasicLink } from '../Link'
-
-import { useAllTokenData, useTokenData } from '../../contexts/TokenData'
-import { useAllPairData, usePairData } from '../../contexts/PairData'
-import DoubleTokenLogo from '../DoubleLogo'
-import { useMedia } from 'react-use'
-import { useAllPairsInUbeswap, useAllTokensInUbeswap } from '../../contexts/GlobalData'
-import { TOKEN_BLACKLIST, PAIR_BLACKLIST } from '../../constants'
-
-import { transparentize } from 'polished'
 import { client } from '../../apollo/client'
 import { PAIR_SEARCH, TOKEN_SEARCH } from '../../apollo/queries'
-import FormattedName from '../FormattedName'
+import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from '../../constants'
+import { useAllPairsInUbeswap, useAllTokensInUbeswap } from '../../contexts/GlobalData'
+import { useAllPairData, usePairData } from '../../contexts/PairData'
+import { useAllTokenData, useTokenData } from '../../contexts/TokenData'
 import { TYPE } from '../../Theme'
 import { updateNameData } from '../../utils/data'
+import DoubleTokenLogo from '../DoubleLogo'
+import FormattedName from '../FormattedName'
+import { BasicLink } from '../Link'
+import Row, { RowFixed } from '../Row'
+import TokenLogo from '../TokenLogo'
 
 const Container = styled.div`
   height: 48px;

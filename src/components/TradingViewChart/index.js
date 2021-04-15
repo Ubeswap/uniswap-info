@@ -5,9 +5,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Play } from 'react-feather'
 import { usePrevious } from 'react-use'
 import styled from 'styled-components'
-import { IconWrapper } from '..'
+
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { formattedNum } from '../../utils'
+import { IconWrapper } from '..'
 
 dayjs.extend(utc)
 

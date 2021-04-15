@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react'
 import 'feather-icons'
 
-import { TYPE } from '../Theme'
-import Panel from '../components/Panel'
-import { useAllPairData } from '../contexts/PairData'
-import PairList from '../components/PairList'
-import { PageWrapper, FullWrapper } from '../components'
-import { RowBetween, AutoRow } from '../components/Row'
-import Search from '../components/Search'
+import React, { useEffect, useState } from 'react'
 import { useMedia } from 'react-use'
-import QuestionHelper from '../components/QuestionHelper'
+
+import { FullWrapper, PageWrapper } from '../components'
 import CheckBox from '../components/Checkbox'
+import PairList from '../components/PairList'
+import Panel from '../components/Panel'
+import QuestionHelper from '../components/QuestionHelper'
+import { AutoRow, RowBetween } from '../components/Row'
+import Search from '../components/Search'
+import { useAllPairData } from '../contexts/PairData'
+import { TYPE } from '../Theme'
 
 function AllPairsPage() {
   const allPairs = useAllPairData()

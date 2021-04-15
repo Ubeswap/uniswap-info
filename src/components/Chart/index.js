@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
-import { Area, XAxis, YAxis, ResponsiveContainer, Bar, BarChart, CartesianGrid, Tooltip, AreaChart } from 'recharts'
-import styled from 'styled-components'
+import React, { useEffect, useState } from 'react'
 import { useMedia } from 'react-use'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import styled from 'styled-components'
+
 import { toK, toNiceDate, toNiceDateYear } from '../../utils'
 
 const ChartWrapper = styled.div`

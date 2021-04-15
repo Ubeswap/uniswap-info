@@ -1,14 +1,16 @@
-import React from 'react'
 import 'feather-icons'
-import styled from 'styled-components'
-import { Text } from 'rebass'
+
+import React from 'react'
 import { AlertTriangle } from 'react-feather'
-import { RowBetween, RowFixed } from '../Row'
+import { useMedia } from 'react-use'
+import { Text } from 'rebass'
+import styled from 'styled-components'
+
+import { Hover } from '..'
 import { ButtonDark } from '../ButtonStyled'
 import { AutoColumn } from '../Column'
-import { Hover } from '..'
 import Link from '../Link'
-import { useMedia } from 'react-use'
+import { RowBetween, RowFixed } from '../Row'
 
 const WarningWrapper = styled.div`
   border-radius: 20px;

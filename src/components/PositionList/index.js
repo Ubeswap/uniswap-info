@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
+
 import { Divider } from '../../components'
 import { useCeloPrice } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
