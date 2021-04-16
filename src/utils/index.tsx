@@ -9,9 +9,10 @@ import { Text } from 'rebass'
 import toFormat from 'toformat'
 
 import { blockClient, client } from '../apollo/client'
-import { GetBlockQuery, GetBlockQueryVariables } from '../apollo/generated/types'
+import { GetBlockQuery, GetBlockQueryVariables, ShareValueFragment } from '../apollo/generated/types'
 import { GET_BLOCK, GET_BLOCKS, SHARE_VALUE } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
+import { toFloat } from './typeAssertions'
 
 // format libraries
 const Decimal = toFormat(_Decimal)
@@ -42,13 +43,13 @@ export function getTimeframe(timeWindow) {
 export function getPoolLink(token0Address, token1Address = null, remove = false) {
   if (!token1Address) {
     return (
-      `https://ubeswap.exchange/` +
+      `https://app.ubeswap.org/#/` +
       (remove ? `remove` : `add`) +
       `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${'ETH'}`
     )
   } else {
     return (
-      `https://ubeswap.exchange/` +
+      `https://app.ubeswap.org/#/` +
       (remove ? `remove` : `add`) +
       `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${
         token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address
@@ -59,9 +60,9 @@ export function getPoolLink(token0Address, token1Address = null, remove = false)
 
 export function getSwapLink(token0Address, token1Address = null) {
   if (!token1Address) {
-    return `https://ubeswap.exchange/swap?inputCurrency=${token0Address}`
+    return `https://app.ubeswap.org/#/swap?inputCurrency=${token0Address}`
   } else {
-    return `https://ubeswap.exchange/swap?inputCurrency=${
+    return `https://app.ubeswap.org/#/swap?inputCurrency=${
       token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address
     }&outputCurrency=${token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address}`
   }
@@ -215,13 +216,29 @@ export async function getBlocksFromTimestamps(
 //   }
 // }
 
+export interface ShareValueSnapshot {
+  timestamp: number
+  sharePriceUsd: number
+  totalSupply: BigDecimal
+  reserve0: BigDecimal
+  reserve1: BigDecimal
+  reserveUSD: BigDecimal
+  token0DerivedCUSD?: BigDecimal | null
+  token1DerivedCUSD?: BigDecimal | null
+  roiUsd: number
+  token0PriceUSD: number
+  token1PriceUSD: number
+}
 /**
  * @notice Example query using time travel queries
  * @dev TODO - handle scenario where blocks are not available for a timestamps (e.g. current time)
  * @param {String} pairAddress
  * @param {Array} timestamps
  */
-export async function getShareValueOverTime(pairAddress, timestamps) {
+export async function getShareValueOverTime(
+  pairAddress: string,
+  timestamps: readonly number[]
+): Promise<readonly ShareValueSnapshot[]> {
   if (!timestamps) {
     const utcCurrentTime = dayjs()
     const utcSevenDaysBack = utcCurrentTime.subtract(8, 'day').unix()
@@ -237,37 +254,25 @@ export async function getShareValueOverTime(pairAddress, timestamps) {
     fetchPolicy: 'cache-first',
   })
 
-  const values = []
+  const values: ShareValueSnapshot[] = []
   for (const row in result?.data) {
     const timestamp = row.split('t')[1]
-    const sharePriceUsd = parseFloat(result.data[row]?.reserveUSD) / parseFloat(result.data[row]?.totalSupply)
-    if (timestamp) {
+    const data = result.data[row] as ShareValueFragment | undefined
+    if (timestamp && data) {
+      const sharePriceUsd = toFloat(data?.reserveUSD) / toFloat(data?.totalSupply)
       values.push({
-        timestamp,
+        timestamp: parseInt(timestamp),
         sharePriceUsd,
-        totalSupply: result.data[row].totalSupply,
-        reserve0: result.data[row].reserve0,
-        reserve1: result.data[row].reserve1,
-        reserveUSD: result.data[row].reserveUSD,
-        token0DerivedETH: result.data[row].token0.derivedETH,
-        token1DerivedETH: result.data[row].token1.derivedETH,
+        totalSupply: data.totalSupply,
+        reserve0: data.reserve0,
+        reserve1: data.reserve1,
+        reserveUSD: data.reserveUSD,
+        token0DerivedCUSD: data.token0.derivedCUSD,
+        token1DerivedCUSD: data.token1.derivedCUSD,
         roiUsd: values && values[0] ? sharePriceUsd / values[0]['sharePriceUsd'] : 1,
-        celoPrice: 0,
-        token0PriceUSD: 0,
-        token1PriceUSD: 0,
+        token0PriceUSD: toFloat(data.token0.derivedCUSD),
+        token1PriceUSD: toFloat(data.token1.derivedCUSD),
       })
-    }
-  }
-
-  // add eth prices
-  let index = 0
-  for (const brow in result?.data) {
-    const timestamp = brow.split('b')[1]
-    if (timestamp) {
-      values[index].celoPrice = result.data[brow].celoPrice
-      values[index].token0PriceUSD = result.data[brow].celoPrice * values[index].token0DerivedETH
-      values[index].token1PriceUSD = result.data[brow].celoPrice * values[index].token1DerivedETH
-      index += 1
     }
   }
 
@@ -464,10 +469,10 @@ export const get2DayPercentChange = (valueNow, value24HoursAgo, value48HoursAgo)
  * @param {*} valueNow
  * @param {*} value24HoursAgo
  */
-export const getPercentChange = (valueNow: string | number, value24HoursAgo: string | number): number => {
+export const getPercentChange = (valueNow?: string | number, value24HoursAgo?: string | number): number => {
   const adjustedPercentChange =
-    ((parseFloat(valueNow.toString()) - parseFloat(value24HoursAgo.toString())) /
-      parseFloat(value24HoursAgo.toString())) *
+    ((parseFloat(valueNow?.toString() ?? '0') - parseFloat(value24HoursAgo?.toString() ?? '0')) /
+      parseFloat(value24HoursAgo?.toString() ?? '0')) *
     100
   if (isNaN(adjustedPercentChange) || !isFinite(adjustedPercentChange)) {
     return 0

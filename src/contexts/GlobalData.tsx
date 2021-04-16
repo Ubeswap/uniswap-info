@@ -246,7 +246,7 @@ type IGlobalData = GlobalDataQuery['ubeswapFactories'][number] &
  * @param {*} oldCeloPrice
  */
 
-async function getGlobalData(): Promise<IGlobalData> {
+async function getGlobalData(): Promise<IGlobalData | null> {
   // data for each day , historic data used for % changes
   let data: IGlobalData | null = null
   let oneDayData: GlobalDataQuery['ubeswapFactories'][number] | null = null
@@ -356,7 +356,6 @@ async function getGlobalData(): Promise<IGlobalData> {
     console.log(e)
   }
 
-  console.log(data)
   return data
 }
 

@@ -8,6 +8,7 @@ import {
   FilteredTransactionsQueryVariables,
   PairDataQuery,
   PairDataQueryVariables,
+  PairFieldsFragment,
   PairsBulkQuery,
   PairsBulkQueryVariables,
   PairsHistoricalBulkQuery,
@@ -32,6 +33,7 @@ import {
   splitQuery,
 } from '../utils'
 import { updateNameData } from '../utils/data'
+import { toFloat, toInt } from '../utils/typeAssertions'
 import { useLatestBlocks } from './Application'
 import { useCeloPrice } from './GlobalData'
 
@@ -231,8 +233,8 @@ async function getBulkPairData(pairList, celoPrice) {
     const pairData = await Promise.all(
       current &&
         current.data.pairs.map(async (pair) => {
-          let data = pair
-          let oneDayHistory = oneDayData?.[pair.id]
+          const data: PairFieldsFragment | undefined = pair
+          let oneDayHistory: PairFieldsFragment | undefined = oneDayData?.[pair.id]
           if (!oneDayHistory) {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
@@ -244,7 +246,7 @@ async function getBulkPairData(pairList, celoPrice) {
             })
             oneDayHistory = newData.data.pairs[0]
           }
-          let twoDayHistory = twoDayData?.[pair.id]
+          let twoDayHistory: PairFieldsFragment | undefined = twoDayData?.[pair.id]
           if (!twoDayHistory) {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
@@ -256,7 +258,7 @@ async function getBulkPairData(pairList, celoPrice) {
             })
             twoDayHistory = newData.data.pairs[0]
           }
-          let oneWeekHistory = oneWeekData?.[pair.id]
+          let oneWeekHistory: PairFieldsFragment | undefined = oneWeekData?.[pair.id]
           if (!oneWeekHistory) {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
@@ -268,8 +270,7 @@ async function getBulkPairData(pairList, celoPrice) {
             })
             oneWeekHistory = newData.data.pairs[0]
           }
-          data = parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, celoPrice, b1)
-          return data
+          return parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, b1)
         })
     )
     return pairData
@@ -278,7 +279,13 @@ async function getBulkPairData(pairList, celoPrice) {
   }
 }
 
-function parseData(data, oneDayData, twoDayData, oneWeekData, celoPrice, oneDayBlock) {
+function parseData(
+  data: PairFieldsFragment,
+  oneDayData: PairFieldsFragment,
+  twoDayData: PairFieldsFragment,
+  oneWeekData: PairFieldsFragment,
+  oneDayBlock: number
+) {
   // get volume changes
   const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
     data?.volumeUSD,
@@ -291,39 +298,43 @@ function parseData(data, oneDayData, twoDayData, oneWeekData, celoPrice, oneDayB
     twoDayData?.untrackedVolumeUSD ? twoDayData?.untrackedVolumeUSD : 0
   )
 
-  const oneWeekVolumeUSD = parseFloat(oneWeekData ? data?.volumeUSD - oneWeekData?.volumeUSD : data.volumeUSD)
+  const oneWeekVolumeUSD = oneWeekData
+    ? toFloat(data?.volumeUSD) - toFloat(oneWeekData?.volumeUSD)
+    : toFloat(data.volumeUSD)
 
-  const oneWeekVolumeUntracked = parseFloat(
-    oneWeekData ? data?.untrackedVolumeUSD - oneWeekData?.untrackedVolumeUSD : data.untrackedVolumeUSD
-  )
+  const oneWeekVolumeUntracked = oneWeekData
+    ? toFloat(data?.untrackedVolumeUSD) - toFloat(oneWeekData?.untrackedVolumeUSD)
+    : toFloat(data.untrackedVolumeUSD)
 
-  // set volume properties
-  data.oneDayVolumeUSD = parseFloat(oneDayVolumeUSD.toString())
-  data.oneWeekVolumeUSD = oneWeekVolumeUSD
-  data.volumeChangeUSD = volumeChangeUSD
-  data.oneDayVolumeUntracked = oneDayVolumeUntracked
-  data.oneWeekVolumeUntracked = oneWeekVolumeUntracked
-  data.volumeChangeUntracked = volumeChangeUntracked
+  const otherProperties = {
+    // set volume properties
+    oneDayVolumeUSD: parseFloat(oneDayVolumeUSD.toString()),
+    oneWeekVolumeUSD: oneWeekVolumeUSD,
+    volumeChangeUSD: volumeChangeUSD,
+    oneDayVolumeUntracked: oneDayVolumeUntracked,
+    oneWeekVolumeUntracked: oneWeekVolumeUntracked,
+    volumeChangeUntracked: volumeChangeUntracked,
 
-  // set liquidity properties
-  data.trackedReserveUSD = data.trackedReserveETH * celoPrice
-  data.liquidityChangeUSD = getPercentChange(data.reserveUSD, oneDayData?.reserveUSD)
+    // set liquidity properties
+    trackedReserveUSD: data.trackedReserveUSD,
+    liquidityChangeUSD: getPercentChange(data.reserveUSD, oneDayData?.reserveUSD),
+  }
 
   // format if pair hasnt existed for a day or a week
-  if (!oneDayData && data && data.createdAtBlockNumber > oneDayBlock) {
-    data.oneDayVolumeUSD = parseFloat(data.volumeUSD)
+  if (!oneDayData && data && toInt(data.createdAtBlockNumber) > oneDayBlock) {
+    otherProperties.oneDayVolumeUSD = parseFloat(data.volumeUSD)
   }
   if (!oneDayData && data) {
-    data.oneDayVolumeUSD = parseFloat(data.volumeUSD)
+    otherProperties.oneDayVolumeUSD = parseFloat(data.volumeUSD)
   }
   if (!oneWeekData && data) {
-    data.oneWeekVolumeUSD = parseFloat(data.volumeUSD)
+    otherProperties.oneWeekVolumeUSD = parseFloat(data.volumeUSD)
   }
 
+  const result = { ...data, ...otherProperties }
   // format incorrect names
-  updateNameData(data)
-
-  return data
+  updateNameData(result)
+  return result
 }
 
 const getPairTransactions = async (pairAddress: string) => {
