@@ -1,10 +1,14 @@
 import dayjs from 'dayjs'
 
 import { client } from '../apollo/client'
-import { LiquidityPairFragment } from '../apollo/generated/types'
+import {
+  LiquidityPairFragment,
+  UserMintsBurnsPerPairQuery,
+  UserMintsBurnsPerPairQueryVariables,
+} from '../apollo/generated/types'
 import { USER_MINTS_BUNRS_PER_PAIR } from '../apollo/queries'
 import { getShareValueOverTime, ShareValueSnapshot } from '.'
-import { toFloat } from './typeAssertions'
+import { toFloat, toInt } from './typeAssertions'
 
 export const priceOverrides = [
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
@@ -45,12 +49,18 @@ function formatPricesForEarlyTimestamps(position): Position {
   return position
 }
 
-async function getPrincipalForUserPerPair(user: string, pairAddress: string) {
+interface Principal {
+  usd: number
+  amount0: number
+  amount1: number
+}
+
+async function getPrincipalForUserPerPair(user: string, pairAddress: string): Promise<Principal> {
   let usd = 0
   let amount0 = 0
   let amount1 = 0
   // get all minst and burns to get principal amounts
-  const results = await client.query({
+  const results = await client.query<UserMintsBurnsPerPairQuery, UserMintsBurnsPerPairQueryVariables>({
     query: USER_MINTS_BUNRS_PER_PAIR,
     variables: {
       user,
@@ -63,9 +73,9 @@ async function getPrincipalForUserPerPair(user: string, pairAddress: string) {
     const mintToken1 = mint.pair.token1.id
 
     // if trackign before prices were discovered (pre-launch days), hardcode stablecoins
-    if (priceOverrides.includes(mintToken0) && mint.timestamp < PRICE_DISCOVERY_START_TIMESTAMP) {
+    if (priceOverrides.includes(mintToken0) && toInt(mint.timestamp) < PRICE_DISCOVERY_START_TIMESTAMP) {
       usd += parseFloat(mint.amount0) * 2
-    } else if (priceOverrides.includes(mintToken1) && mint.timestamp < PRICE_DISCOVERY_START_TIMESTAMP) {
+    } else if (priceOverrides.includes(mintToken1) && toInt(mint.timestamp) < PRICE_DISCOVERY_START_TIMESTAMP) {
       usd += parseFloat(mint.amount1) * 2
     } else {
       usd += parseFloat(mint.amountUSD)
@@ -80,9 +90,9 @@ async function getPrincipalForUserPerPair(user: string, pairAddress: string) {
     const burnToken1 = burn.pair.token1.id
 
     // if trackign before prices were discovered (pre-launch days), hardcode stablecoins
-    if (priceOverrides.includes(burnToken0) && burn.timestamp < PRICE_DISCOVERY_START_TIMESTAMP) {
+    if (priceOverrides.includes(burnToken0) && toInt(burn.timestamp) < PRICE_DISCOVERY_START_TIMESTAMP) {
       usd += parseFloat(burn.amount0) * 2
-    } else if (priceOverrides.includes(burnToken1) && burn.timestamp < PRICE_DISCOVERY_START_TIMESTAMP) {
+    } else if (priceOverrides.includes(burnToken1) && toInt(burn.timestamp) < PRICE_DISCOVERY_START_TIMESTAMP) {
       usd += parseFloat(burn.amount1) * 2
     } else {
       usd -= parseFloat(burn.amountUSD)
@@ -159,7 +169,18 @@ export function getMetricsForPositionWindow(positionT0: Position, positionT1: Po
  * @param pairSnapshots // history of entries and exits for lp on this pair
  * @param currentETHPrice // current price of eth used for usd conversions
  */
-export async function getHistoricalPairReturns(startDateTimestamp, currentPairData, pairSnapshots, currentETHPrice) {
+export async function getHistoricalPairReturns(
+  startDateTimestamp,
+  currentPairData,
+  pairSnapshots,
+  currentETHPrice
+): Promise<
+  {
+    date: number
+    usdValue: number
+    fees: number
+  }[]
+> {
   // catch case where data not puplated yet
   if (!currentPairData.createdAtTimestamp) {
     return []
@@ -257,7 +278,22 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
  * @param pair
  * @param celoPrice
  */
-export async function getLPReturnsOnPair(user: string, pair: LiquidityPairFragment, snapshots) {
+export async function getLPReturnsOnPair(
+  user: string,
+  pair: LiquidityPairFragment,
+  snapshots
+): Promise<{
+  principal: Principal
+  net: {
+    return: number
+  }
+  ubeswap: {
+    return: number
+  }
+  fees: {
+    sum: number
+  }
+}> {
   // initialize values
   const principal = await getPrincipalForUserPerPair(user, pair.id)
   let hodlReturn = 0

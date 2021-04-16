@@ -183,7 +183,7 @@ export const CELO_PRICE = gql`
 `
 
 export const USER_MINTS_BUNRS_PER_PAIR = gql`
-  query events($user: Bytes, $pair: String!) {
+  query UserMintsBurnsPerPair($user: Bytes, $pair: String!) {
     mints(where: { to: $user, pair: $pair }) {
       amountUSD
       amount0
