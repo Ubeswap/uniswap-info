@@ -643,6 +643,7 @@ const PairFields = gql`
     token0Price
     token1Price
     createdAtTimestamp
+    createdAtBlockNumber
   }
 `
 

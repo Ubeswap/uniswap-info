@@ -170,7 +170,7 @@ export function getMetricsForPositionWindow(positionT0: Position, positionT1: Po
  * @param currentETHPrice // current price of eth used for usd conversions
  */
 export async function getHistoricalPairReturns(
-  startDateTimestamp,
+  startDateTimestamp: number,
   currentPairData,
   pairSnapshots,
   currentETHPrice
