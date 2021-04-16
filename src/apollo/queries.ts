@@ -119,6 +119,21 @@ export const HOURLY_PAIR_RATES = (pairAddress, blocks) => {
   return gql(queryString)
 }
 
+const shareValueFragment = gql`
+  fragment shareValue on Pair {
+    reserve0
+    reserve1
+    reserveUSD
+    totalSupply
+    token0 {
+      derivedCUSD
+    }
+    token1 {
+      derivedCUSD
+    }
+  }
+`
+
 export const SHARE_VALUE = (
   pairAddress: string,
   blocks: readonly {
@@ -126,20 +141,11 @@ export const SHARE_VALUE = (
     number: number
   }[]
 ): DocumentNode => {
-  let queryString = 'query blocks {'
+  let queryString = 'query HistoricalShareValue {'
   queryString += blocks.map(
     (block) => `
       t${block.timestamp}:pair(id:"${pairAddress}", block: { number: ${block.number} }) { 
-        reserve0
-        reserve1
-        reserveUSD
-        totalSupply 
-        token0{
-          derivedCUSD
-        }
-        token1{
-          derivedCUSD
-        }
+        ...shareValue
       }
     `
   )
@@ -153,6 +159,8 @@ export const SHARE_VALUE = (
   )
 
   queryString += '}'
+  // insert share value fragment
+  queryString += shareValueFragment.loc?.source.body ?? ''
   return gql(queryString)
 }
 
@@ -242,25 +250,32 @@ export const USER_HISTORY = gql`
   }
 `
 
+export const liquidityPairFragment = gql`
+  fragment liquidityPair on Pair {
+    id
+    reserve0
+    reserve1
+    reserveUSD
+    token0 {
+      id
+      symbol
+      derivedCUSD
+    }
+    token1 {
+      id
+      symbol
+      derivedCUSD
+    }
+    totalSupply
+  }
+`
+
 export const USER_POSITIONS = gql`
   query liquidityPositions($user: String!) {
     liquidityPositions(where: { user: $user }) {
       pair {
         id
-        reserve0
-        reserve1
-        reserveUSD
-        token0 {
-          id
-          symbol
-          derivedCUSD
-        }
-        token1 {
-          id
-          symbol
-          derivedCUSD
-        }
-        totalSupply
+        ...liquidityPair
       }
       liquidityTokenBalance
     }

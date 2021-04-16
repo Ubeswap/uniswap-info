@@ -1,8 +1,10 @@
 import dayjs from 'dayjs'
 
 import { client } from '../apollo/client'
+import { LiquidityPairFragment } from '../apollo/generated/types'
 import { USER_MINTS_BUNRS_PER_PAIR } from '../apollo/queries'
-import { getShareValueOverTime } from '.'
+import { getShareValueOverTime, ShareValueSnapshot } from '.'
+import { toFloat } from './typeAssertions'
 
 export const priceOverrides = [
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
@@ -38,13 +40,6 @@ function formatPricesForEarlyTimestamps(position): Position {
     }
     if (priceOverrides.includes(position?.pair?.token1.id)) {
       position.token1PriceUSD = 1
-    }
-    // WETH price
-    if (position.pair?.token0.id === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') {
-      position.token0PriceUSD = 203
-    }
-    if (position.pair?.token1.id === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') {
-      position.token1PriceUSD = 203
     }
   }
   return position
@@ -178,7 +173,7 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
     dayIndex = Math.round(sortedPositions[0].timestamp / 86400)
   }
 
-  const dayTimestamps = []
+  const dayTimestamps: number[] = []
   while (dayIndex < currentDayIndex) {
     // only account for days where this pair existed
     if (dayIndex * 86400 >= parseInt(currentPairData.createdAtTimestamp)) {
@@ -188,14 +183,18 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
   }
 
   const shareValues = await getShareValueOverTime(currentPairData.id, dayTimestamps)
-  const shareValuesFormatted = {}
+  const shareValuesFormatted: Record<number, ShareValueSnapshot> = {}
   shareValues.map((share) => {
     return (shareValuesFormatted[share.timestamp] = share)
   })
 
   // set the default position and data
   let positionT0 = pairSnapshots[0]
-  const formattedHistory = []
+  const formattedHistory: {
+    date: number
+    usdValue: number
+    fees: number
+  }[] = []
   let netFees = 0
 
   // keep track of up to date metrics as we parse each day
@@ -216,35 +215,37 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
     }
 
     // now treat the end of the day as a hypothetical position
-    let positionT1 = shareValuesFormatted[dayTimestamp + 86400]
-    if (!positionT1) {
-      positionT1 = {
-        pair: currentPairData.id,
-        liquidityTokenBalance: positionT0.liquidityTokenBalance,
-        totalSupply: currentPairData.totalSupply,
-        reserve0: currentPairData.reserve0,
-        reserve1: currentPairData.reserve1,
-        reserveUSD: currentPairData.reserveUSD,
-        token0PriceUSD: currentPairData.token0.derivedETH * currentETHPrice,
-        token1PriceUSD: currentPairData.token1.derivedETH * currentETHPrice,
-      }
+    const positionT1: Omit<ShareValueSnapshot, 'timestamp' | 'sharePriceUsd' | 'roiUsd'> = shareValuesFormatted[
+      dayTimestamp + 86400
+    ] ?? {
+      totalSupply: currentPairData.totalSupply,
+      reserve0: currentPairData.reserve0,
+      reserve1: currentPairData.reserve1,
+      reserveUSD: currentPairData.reserveUSD,
+      token0PriceUSD: currentPairData.token0.derivedETH * currentETHPrice,
+      token1PriceUSD: currentPairData.token1.derivedETH * currentETHPrice,
     }
 
-    if (positionT1) {
-      positionT1.liquidityTokenTotalSupply = positionT1.totalSupply
-      positionT1.liquidityTokenBalance = positionT0.liquidityTokenBalance
-      const currentLiquidityValue =
-        (parseFloat(positionT1.liquidityTokenBalance) / parseFloat(positionT1.liquidityTokenTotalSupply)) *
-        parseFloat(positionT1.reserveUSD)
-      const localReturns = getMetricsForPositionWindow(positionT0, positionT1)
-      const localFees = netFees + localReturns.fees
+    const liquidityTokenTotalSupply = positionT1.totalSupply
+    const liquidityTokenBalance = positionT0.liquidityTokenBalance
+    const currentLiquidityValue =
+      (parseFloat(liquidityTokenBalance) / parseFloat(liquidityTokenTotalSupply)) * parseFloat(positionT1.reserveUSD)
+    const localReturns = getMetricsForPositionWindow(positionT0, {
+      ...positionT1,
+      pair: currentPairData.id,
+      liquidityTokenTotalSupply: toFloat(liquidityTokenTotalSupply),
+      liquidityTokenBalance,
+      reserve0: toFloat(positionT1.reserve0),
+      reserve1: toFloat(positionT1.reserve1),
+      reserveUSD: toFloat(positionT1.reserveUSD),
+    })
+    const localFees = netFees + localReturns.fees
 
-      formattedHistory.push({
-        date: dayTimestamp,
-        usdValue: currentLiquidityValue,
-        fees: localFees,
-      })
-    }
+    formattedHistory.push({
+      date: dayTimestamp,
+      usdValue: currentLiquidityValue,
+      fees: localFees,
+    })
   }
 
   return formattedHistory
@@ -256,7 +257,7 @@ export async function getHistoricalPairReturns(startDateTimestamp, currentPairDa
  * @param pair
  * @param celoPrice
  */
-export async function getLPReturnsOnPair(user: string, pair, celoPrice: number, snapshots) {
+export async function getLPReturnsOnPair(user: string, pair: LiquidityPairFragment, snapshots) {
   // initialize values
   const principal = await getPrincipalForUserPerPair(user, pair.id)
   let hodlReturn = 0
@@ -272,12 +273,12 @@ export async function getLPReturnsOnPair(user: string, pair, celoPrice: number, 
   const currentPosition: Position = {
     pair,
     liquidityTokenBalance: snapshots[snapshots.length - 1]?.liquidityTokenBalance,
-    liquidityTokenTotalSupply: pair.totalSupply,
-    reserve0: pair.reserve0,
-    reserve1: pair.reserve1,
-    reserveUSD: pair.reserveUSD,
-    token0PriceUSD: pair.token0.derivedETH * celoPrice,
-    token1PriceUSD: pair.token1.derivedETH * celoPrice,
+    liquidityTokenTotalSupply: toFloat(pair.totalSupply),
+    reserve0: toFloat(pair.reserve0),
+    reserve1: toFloat(pair.reserve1),
+    reserveUSD: toFloat(pair.reserveUSD),
+    token0PriceUSD: toFloat(pair.token0.derivedCUSD),
+    token1PriceUSD: toFloat(pair.token1.derivedCUSD),
   }
 
   for (const index in snapshots) {

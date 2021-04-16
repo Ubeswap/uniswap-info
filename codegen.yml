@@ -6,9 +6,9 @@ documents: ./src/apollo/queries.ts
 config:
   immutableTypes: true
   scalars:
-    Bytes: 'string & { _isBytes?: true; }'
-    BigInt: 'string & { _isBigInt?: true; }'
-    BigDecimal: 'string & { _isBigDecimal?: true; }'
+    Bytes: Bytes
+    BigInt: GBigInt
+    BigDecimal: BigDecimal
 generates:
   ./src/apollo/generated/types.ts:
     plugins:

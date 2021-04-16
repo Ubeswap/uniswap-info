@@ -3,7 +3,13 @@ import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 
 import { client } from '../apollo/client'
-import { UserTransactionsQuery } from '../apollo/generated/types'
+import {
+  LiquidityPositionsQuery,
+  LiquidityPositionsQueryVariables,
+  UserHistoryQuery,
+  UserHistoryQueryVariables,
+  UserTransactionsQuery,
+} from '../apollo/generated/types'
 import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 import { getHistoricalPairReturns, getLPReturnsOnPair } from '../utils/returns'
@@ -194,7 +200,7 @@ export function useUserTransactions(account) {
  * Each snapshot is a moment when an LP position was created or updated.
  * @param {*} account
  */
-export function useUserSnapshots(account) {
+export function useUserSnapshots(account): UserHistoryQuery['liquidityPositionSnapshots'] {
   const [state, { updateUserSnapshots }] = useUserContext()
   const snapshots = state?.[account]?.[USER_SNAPSHOTS]
 
@@ -202,10 +208,10 @@ export function useUserSnapshots(account) {
     async function fetchData() {
       try {
         let skip = 0
-        let allResults = []
+        let allResults: UserHistoryQuery['liquidityPositionSnapshots'] = []
         let found = false
         while (!found) {
-          const result = await client.query({
+          const result = await client.query<UserHistoryQuery, UserHistoryQueryVariables>({
             query: USER_HISTORY,
             variables: {
               skip: skip,
@@ -331,29 +337,29 @@ export function useUserLiquidityChart(account) {
         break
     }
     const startTime = utcStartTime.unix() - 1
-    if ((activeWindow && startTime < startDateTimestamp) || !startDateTimestamp) {
+    if (!startDateTimestamp || (activeWindow && startTime < startDateTimestamp)) {
       setStartDateTimestamp(startTime)
     }
   }, [activeWindow, startDateTimestamp])
 
   useEffect(() => {
     async function fetchData() {
-      let dayIndex = parseInt((startDateTimestamp / 86400).toString()) // get unique day bucket unix
+      let dayIndex = startDateTimestamp ? Math.floor(startDateTimestamp / 86400) : 0 // get unique day bucket unix
       const currentDayIndex = parseInt((dayjs.utc().unix() / 86400).toString())
 
       // sort snapshots in order
-      const sortedPositions = history.sort((a, b) => {
-        return parseInt(a.timestamp) > parseInt(b.timestamp) ? 1 : -1
+      const sortedPositions = history.slice().sort((a, b) => {
+        return a.timestamp > b.timestamp ? 1 : -1
       })
       // if UI start time is > first position time - bump start index to this time
-      if (parseInt(sortedPositions[0].timestamp) > dayIndex) {
+      if ((sortedPositions[0].timestamp ?? 0) > dayIndex) {
         dayIndex = parseInt((parseInt(sortedPositions[0].timestamp.toString()) / 86400).toString())
       }
 
-      const dayTimestamps = []
+      const dayTimestamps: number[] = []
       // get date timestamps for all days in view
       while (dayIndex < currentDayIndex) {
-        dayTimestamps.push(parseInt(dayIndex.toString()) * 86400)
+        dayTimestamps.push(dayIndex * 86400)
         dayIndex = dayIndex + 1
       }
 
@@ -454,7 +460,7 @@ export function useUserPositions(account) {
   useEffect(() => {
     async function fetchData(account) {
       try {
-        const result = await client.query({
+        const result = await client.query<LiquidityPositionsQuery, LiquidityPositionsQueryVariables>({
           query: USER_POSITIONS,
           variables: {
             user: account,
@@ -464,7 +470,7 @@ export function useUserPositions(account) {
         if (result?.data?.liquidityPositions) {
           const formattedPositions = await Promise.all(
             result?.data?.liquidityPositions.map(async (positionData) => {
-              const returnData = await getLPReturnsOnPair(account, positionData.pair, celoPrice, snapshots)
+              const returnData = await getLPReturnsOnPair(account, positionData.pair, snapshots)
               return {
                 ...positionData,
                 ...returnData,
