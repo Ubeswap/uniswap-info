@@ -26,6 +26,7 @@ const ChartWrapper = styled.div`
 
 const OptionsRow = styled.div`
   display: flex;
+  justify-content: space-between;
   flex-direction: row;
   width: 100%;
   margin-bottom: 40px;
