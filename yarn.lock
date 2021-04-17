@@ -2854,10 +2854,10 @@
     "@typescript-eslint/types" "4.4.0"
     eslint-visitor-keys "^2.0.0"
 
-"@ubeswap/default-token-list@^0.4.3":
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-0.4.3.tgz#d6cfd8d531f021a277f8009434ba2d9071c8559e"
-  integrity sha512-HVMfKUBznDzmdlEuFwL8XIS0LtMDTvIPaha/hpVWVPjkIwHNLn7bOc8AJsHqxirdF+QLgpcxpf7uVqyjLbouAw==
+"@ubeswap/default-token-list@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-2.0.0.tgz#1011243a624a5093626f51e2bd5ce08497568cec"
+  integrity sha512-iNDv1YDwVxbRukKmuwjPbLpQ3ln5tPLCDx9TyoqAnM8aMrZ+4NBzL9KDT3Q2UNQEy+RmvdDd2s0aUEaUgmQbYw==
 
 "@ubeswap/subgraph@^1.0.0":
   version "1.0.0"

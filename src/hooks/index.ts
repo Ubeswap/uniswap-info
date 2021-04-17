@@ -1,4 +1,5 @@
 import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
+import UbeswapExperimentalTokenList from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
 import copy from 'copy-to-clipboard'
 import Vibrant from 'node-vibrant'
 import { shade } from 'polished'
@@ -7,7 +8,9 @@ import { hex } from 'wcag-contrast'
 
 import { isAddress } from '../utils'
 
-const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
+const ALL_TOKENS = [UbeswapDefaultTokenList, UbeswapExperimentalTokenList].flatMap((list) =>
+  list.tokens.filter((tok) => tok.chainId === 42220)
+)
 
 export function useColor(tokenAddress: string, token: string): string {
   const [color, setColor] = useState('#2172E5')
@@ -34,7 +37,7 @@ export function useColor(tokenAddress: string, token: string): string {
   return color
 }
 
-export function useCopyClipboard(timeout = 500) {
+export function useCopyClipboard(timeout = 500): [boolean, (text: string) => void] {
   const [isCopied, setIsCopied] = useState(false)
 
   const staticCopy = useCallback((text) => {
