@@ -102,7 +102,7 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@ubeswap/default-token-list": "^0.4.3",
+    "@ubeswap/default-token-list": "^2.0.0",
     "@ubeswap/subgraph": "^1.0.0"
   },
   "resolutions": {

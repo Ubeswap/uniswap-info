@@ -13,6 +13,7 @@ export const timeframeOptions = {
 // token list urls to fetch tokens from - use for warnings on tokens and pairs
 export const SUPPORTED_LIST_URLS__NO_ENS = [
   'https://raw.githubusercontent.com/Ubeswap/default-token-list/master/ubeswap.token-list.json',
+  'https://raw.githubusercontent.com/Ubeswap/default-token-list/master/ubeswap-experimental.token-list.json',
 ]
 
 // hide from overview list
