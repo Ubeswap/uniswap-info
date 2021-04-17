@@ -1,21 +1,16 @@
-import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
-import UbeswapExperimentalTokenList from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
 import copy from 'copy-to-clipboard'
 import Vibrant from 'node-vibrant'
 import { shade } from 'polished'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { hex } from 'wcag-contrast'
 
+import { ALL_MAINNET_TOKENS } from '../constants'
 import { isAddress } from '../utils'
-
-const ALL_TOKENS = [UbeswapDefaultTokenList, UbeswapExperimentalTokenList].flatMap((list) =>
-  list.tokens.filter((tok) => tok.chainId === 42220)
-)
 
 export function useColor(tokenAddress: string, token: string): string {
   const [color, setColor] = useState('#2172E5')
   if (tokenAddress) {
-    const path = ALL_TOKENS.find((tok) => tok.address === isAddress(tokenAddress))?.logoURI
+    const path = ALL_MAINNET_TOKENS.find((tok) => tok.address === isAddress(tokenAddress))?.logoURI
     if (path) {
       Vibrant.from(path).getPalette((err, palette) => {
         if (palette && palette.Vibrant) {

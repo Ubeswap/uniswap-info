@@ -1,3 +1,14 @@
+import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
+import UbeswapExperimentalTokenList from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
+import { TokenInfo } from '@uniswap/token-lists'
+import { keyBy } from 'lodash'
+
+export const ALL_MAINNET_TOKENS = [UbeswapDefaultTokenList, UbeswapExperimentalTokenList].flatMap((list) =>
+  list.tokens.filter((tok) => tok.chainId === 42220)
+)
+
+export const ALL_MAINNET_TOKENS_MAP: Record<string, TokenInfo> = keyBy(ALL_MAINNET_TOKENS, (tok) => tok.address)
+
 export const FACTORY_ADDRESS = '0x62d5b84bE28a183aBB507E125B384122D2C25fAE'
 
 export const BUNDLE_ID = '1'

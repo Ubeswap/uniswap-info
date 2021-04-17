@@ -1,7 +1,7 @@
-import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { ALL_MAINNET_TOKENS_MAP } from '../../constants'
 import { isAddress } from '../../utils/index'
 
 const BAD_IMAGES = {}
@@ -30,7 +30,8 @@ interface Props extends Omit<CommonProps, 'size' | 'ref' | 'as'> {
 }
 
 export default function TokenLogo({ address, size = '24px', ...rest }: Props): JSX.Element {
-  const tokenInfo = UbeswapDefaultTokenList.tokens.find((tok) => tok.address === isAddress(address))
+  const addressChecksum = isAddress(address)
+  const tokenInfo = addressChecksum ? ALL_MAINNET_TOKENS_MAP[addressChecksum] : null
   const path = tokenInfo?.logoURI
   const [error, setError] = useState(false)
 

@@ -1,4 +1,3 @@
-import UbeswapDefaultTokenList from '@ubeswap/default-token-list'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { useEffect, useState } from 'react'
@@ -8,7 +7,7 @@ import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
 import { Divider } from '../../components'
-import { PAIR_BLACKLIST } from '../../constants'
+import { ALL_MAINNET_TOKENS, PAIR_BLACKLIST } from '../../constants'
 import { TYPE } from '../../Theme'
 import { formattedNum, formattedPercent } from '../../utils'
 import { isAddress } from '../../utils/index'
@@ -19,8 +18,7 @@ import { CustomLink } from '../Link'
 import LocalLoader from '../LocalLoader'
 import QuestionHelper from '../QuestionHelper'
 
-const ALL_TOKENS = UbeswapDefaultTokenList.tokens.filter((tok) => tok.chainId === 42220)
-const ALL_TOKEN_ADDRESSES = new Set([...ALL_TOKENS.map((tok) => tok.address)])
+const ALL_TOKEN_ADDRESSES = new Set([...ALL_MAINNET_TOKENS.map((tok) => tok.address)])
 
 dayjs.extend(utc)
 
