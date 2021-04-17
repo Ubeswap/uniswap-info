@@ -35,7 +35,6 @@ import {
 import { updateNameData } from '../utils/data'
 import { toFloat, toInt } from '../utils/typeAssertions'
 import { useLatestBlocks } from './Application'
-import { useCeloPrice } from './GlobalData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_PAIR_TXNS = 'UPDATE_PAIR_TXNS'
@@ -191,7 +190,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   )
 }
 
-async function getBulkPairData(pairList, celoPrice) {
+async function getBulkPairData(pairList) {
   const [t1, t2, tWeek] = getTimestampsForChanges()
   const [{ number: b1 }, { number: b2 }, { number: bWeek }] = await getBlocksFromTimestamps([t1, t2, tWeek])
 
@@ -499,9 +498,8 @@ const getHourlyRateData = async (pairAddress, startTime, latestBlock) => {
   }
 }
 
-export function Updater() {
+export function Updater(): null {
   const [, { updateTopPairs }] = usePairDataContext()
-  const [celoPrice] = useCeloPrice()
   useEffect(() => {
     async function getData() {
       // get top pairs by reserves
@@ -518,15 +516,15 @@ export function Updater() {
       })
 
       // get data for every pair in list
-      const topPairs = await getBulkPairData(formattedPairs, celoPrice)
+      const topPairs = await getBulkPairData(formattedPairs)
       topPairs && updateTopPairs(topPairs)
     }
-    celoPrice && getData()
-  }, [celoPrice, updateTopPairs])
+    getData()
+  }, [updateTopPairs])
   return null
 }
 
-export function useHourlyRateData(pairAddress, timeWindow) {
+export function useHourlyRateData(pairAddress: string, timeWindow) {
   const [state, { updateHourlyData }] = usePairDataContext()
   const chartData = state?.[pairAddress]?.hourlyData?.[timeWindow]
   const [latestBlock] = useLatestBlocks()
@@ -555,7 +553,6 @@ export function useHourlyRateData(pairAddress, timeWindow) {
  */
 export function useDataForList(pairList) {
   const [state] = usePairDataContext()
-  const [celoPrice] = useCeloPrice()
 
   const [stale, setStale] = useState(false)
   const [fetched, setFetched] = useState<Record<string, unknown>[] | undefined>([])
@@ -585,16 +582,15 @@ export function useDataForList(pairList) {
       const newPairData = await getBulkPairData(
         unfetched.map((pair) => {
           return pair
-        }),
-        celoPrice
+        })
       )
       setFetched(newFetched.concat(newPairData))
     }
-    if (celoPrice && pairList && pairList.length > 0 && !fetched && !stale) {
+    if (pairList && pairList.length > 0 && !fetched && !stale) {
       setStale(true)
       fetchNewPairData()
     }
-  }, [celoPrice, state, pairList, stale, fetched])
+  }, [state, pairList, stale, fetched])
 
   const formattedFetch =
     fetched &&
@@ -610,20 +606,19 @@ export function useDataForList(pairList) {
  */
 export function usePairData(pairAddress) {
   const [state, { update }] = usePairDataContext()
-  const [celoPrice] = useCeloPrice()
   const pairData = state?.[pairAddress]
 
   useEffect(() => {
     async function fetchData() {
       if (!pairData && pairAddress) {
-        const data = await getBulkPairData([pairAddress], celoPrice)
+        const data = await getBulkPairData([pairAddress])
         data && update(pairAddress, data[0])
       }
     }
-    if (!pairData && pairAddress && celoPrice && isAddress(pairAddress)) {
+    if (!pairData && pairAddress && isAddress(pairAddress)) {
       fetchData()
     }
-  }, [pairAddress, pairData, update, celoPrice])
+  }, [pairAddress, pairData, update])
 
   return pairData || {}
 }
