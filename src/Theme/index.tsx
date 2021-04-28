@@ -76,7 +76,7 @@ const theme = (darkMode: boolean, color?: string) => ({
 })
 
 const TextWrapper = styled(Text)`
-  color: ${({ color, theme }) => theme[color]};
+  color: ${({ color, theme }) => theme[color as string]};
 `
 
 export const TYPE = {
