@@ -255,7 +255,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
 type IGlobalData = GlobalDataQuery['ubeswapFactories'][number] &
   Partial<{
     oneDayVolumeUSD: number
-    oneWeekVolume: number
+    oneWeekVolumeUSD: number
     weeklyVolumeChange: number
     volumeChangeUSD: number
     liquidityChangeUSD: number
@@ -359,8 +359,8 @@ async function getGlobalData(): Promise<IGlobalData | null> {
 
       const [oneDayTxns, txnChange] = get2DayPercentChange(
         data.txCount,
-        oneDayData.txCount ? oneDayData.txCount : 0,
-        twoDayData.txCount ? twoDayData.txCount : 0
+        oneDayData.txCount ? oneDayData.txCount : '0',
+        twoDayData.txCount ? twoDayData.txCount : '0'
       )
 
       // format the total liquidity in USD

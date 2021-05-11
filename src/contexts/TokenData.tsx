@@ -325,13 +325,13 @@ const getTopTokens = async () => {
           // calculate percentage changes and daily changes
           const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
             data.tradeVolumeUSD,
-            oneDayHistory?.tradeVolumeUSD ?? 0,
-            twoDayHistory?.tradeVolumeUSD ?? 0
+            oneDayHistory?.tradeVolumeUSD ?? '0',
+            twoDayHistory?.tradeVolumeUSD ?? '0'
           )
           const [oneDayTxns, txnChange] = get2DayPercentChange(
             data.txCount,
-            oneDayHistory?.txCount ?? 0,
-            twoDayHistory?.txCount ?? 0
+            oneDayHistory?.txCount ?? '0',
+            twoDayHistory?.txCount ?? '0'
           )
 
           const currentLiquidityUSD = parseFloat(data?.totalLiquidity) * parseFloat(data?.derivedCUSD)
@@ -457,23 +457,19 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     // calculate percentage changes and daily changes
     const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
       data.tradeVolumeUSD,
-      oneDayData?.tradeVolumeUSD ?? 0,
-      twoDayData?.tradeVolumeUSD ?? 0
+      oneDayData?.tradeVolumeUSD,
+      twoDayData?.tradeVolumeUSD
     )
 
     // calculate percentage changes and daily changes
     const [oneDayVolumeUT, volumeChangeUT] = get2DayPercentChange(
       data.untrackedVolumeUSD,
-      oneDayData?.untrackedVolumeUSD ?? 0,
-      twoDayData?.untrackedVolumeUSD ?? 0
+      oneDayData?.untrackedVolumeUSD,
+      twoDayData?.untrackedVolumeUSD
     )
 
     // calculate percentage changes and daily changes
-    const [oneDayTxns, txnChange] = get2DayPercentChange(
-      data.txCount,
-      oneDayData?.txCount ?? 0,
-      twoDayData?.txCount ?? 0
-    )
+    const [oneDayTxns, txnChange] = get2DayPercentChange(data.txCount, oneDayData?.txCount, twoDayData?.txCount)
 
     const priceChangeUSD = getPercentChange(data?.derivedCUSD, oneDayData?.derivedCUSD ?? 0)
 

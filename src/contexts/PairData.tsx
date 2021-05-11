@@ -235,59 +235,57 @@ async function getBulkPairData(pairList) {
     }, {})
 
     const pairData = await Promise.all(
-      current &&
-        current.data.pairs.map(async (pair) => {
-          const data: PairFieldsFragment | undefined = pair
-          let oneDayHistory: PairFieldsFragment | undefined = oneDayData?.[pair.id]
-          if (!oneDayHistory) {
-            try {
-              const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
-                query: PAIR_DATA,
-                fetchPolicy: 'cache-first',
-                variables: {
-                  pairAddress: pair.id,
-                  block: b1,
-                },
-              })
-              oneDayHistory = newData.data.pairs[0]
-            } catch (e) {
-              console.error(e)
-            }
+      current.data.pairs.map(async (pair) => {
+        let oneDayHistory: PairFieldsFragment | undefined = oneDayData?.[pair.id]
+        if (!oneDayHistory) {
+          try {
+            const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
+              query: PAIR_DATA,
+              fetchPolicy: 'cache-first',
+              variables: {
+                pairAddress: pair.id,
+                block: b1,
+              },
+            })
+            oneDayHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          let twoDayHistory: PairFieldsFragment | undefined = twoDayData?.[pair.id]
-          if (!twoDayHistory) {
-            try {
-              const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
-                query: PAIR_DATA,
-                fetchPolicy: 'cache-first',
-                variables: {
-                  pairAddress: pair.id,
-                  block: b2,
-                },
-              })
-              twoDayHistory = newData.data.pairs[0]
-            } catch (e) {
-              console.error(e)
-            }
+        }
+        let twoDayHistory: PairFieldsFragment | undefined = twoDayData?.[pair.id]
+        if (!twoDayHistory) {
+          try {
+            const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
+              query: PAIR_DATA,
+              fetchPolicy: 'cache-first',
+              variables: {
+                pairAddress: pair.id,
+                block: b2,
+              },
+            })
+            twoDayHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          let oneWeekHistory: PairFieldsFragment | undefined = oneWeekData?.[pair.id]
-          if (!oneWeekHistory) {
-            try {
-              const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
-                query: PAIR_DATA,
-                fetchPolicy: 'cache-first',
-                variables: {
-                  pairAddress: pair.id,
-                  block: bWeek,
-                },
-              })
-              oneWeekHistory = newData.data.pairs[0]
-            } catch (e) {
-              console.error(e)
-            }
+        }
+        let oneWeekHistory: PairFieldsFragment | undefined = oneWeekData?.[pair.id]
+        if (!oneWeekHistory) {
+          try {
+            const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
+              query: PAIR_DATA,
+              fetchPolicy: 'cache-first',
+              variables: {
+                pairAddress: pair.id,
+                block: bWeek,
+              },
+            })
+            oneWeekHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          return parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, b1)
-        })
+        }
+        return parseData(pair, oneDayHistory, twoDayHistory, oneWeekHistory, b1)
+      })
     )
     return pairData
   } catch (e) {
@@ -305,13 +303,13 @@ function parseData(
   // get volume changes
   const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
     data?.volumeUSD,
-    oneDayData?.volumeUSD ? oneDayData.volumeUSD : 0,
-    twoDayData?.volumeUSD ? twoDayData.volumeUSD : 0
+    oneDayData?.volumeUSD ? oneDayData.volumeUSD : '0',
+    twoDayData?.volumeUSD ? twoDayData.volumeUSD : '0'
   )
   const [oneDayVolumeUntracked, volumeChangeUntracked] = get2DayPercentChange(
     data?.untrackedVolumeUSD,
-    oneDayData?.untrackedVolumeUSD ? parseFloat(oneDayData?.untrackedVolumeUSD) : 0,
-    twoDayData?.untrackedVolumeUSD ? twoDayData?.untrackedVolumeUSD : 0
+    oneDayData?.untrackedVolumeUSD ? oneDayData?.untrackedVolumeUSD : '0',
+    twoDayData?.untrackedVolumeUSD ? twoDayData?.untrackedVolumeUSD : '0'
   )
 
   const oneWeekVolumeUSD = oneWeekData

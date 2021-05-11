@@ -450,7 +450,11 @@ export function formattedPercent(percent, useBrackets = false) {
  * @param {*} value24HoursAgo
  * @param {*} value48HoursAgo
  */
-export const get2DayPercentChange = (valueNow, value24HoursAgo, value48HoursAgo) => {
+export const get2DayPercentChange = (
+  valueNow: BigDecimal,
+  value24HoursAgo: BigDecimal = '0',
+  value48HoursAgo: BigDecimal = '0'
+): readonly [number, number] => {
   // get volume info for both 24 hour periods
   const currentChange = parseFloat(valueNow) - parseFloat(value24HoursAgo)
   const previousChange = parseFloat(value24HoursAgo) - parseFloat(value48HoursAgo)
