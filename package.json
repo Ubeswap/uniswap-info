@@ -54,7 +54,7 @@
     "prettier": "^2.3.0",
     "react": "^16.9.0",
     "react-apollo": "^3.1.1",
-    "react-device-detect": "^1.9.10",
+    "react-device-detect": "^1.17.0",
     "react-dom": "^16.9.0",
     "react-feather": "^2.0.3",
     "react-ga": "^3.1.2",
