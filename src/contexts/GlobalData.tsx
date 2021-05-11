@@ -5,6 +5,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 
 import { client } from '../apollo/client'
 import {
+  AllPairsQuery,
+  AllPairsQueryVariables,
   CeloPriceQuery,
   CeloPriceQueryVariables,
   CurrentCeloPriceQuery,
@@ -58,7 +60,29 @@ const offsetVolumes = [
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)
 
-const GlobalDataContext = createContext(null)
+interface IGlobalDataState {
+  globalData?: IGlobalData
+  chartData?: {
+    daily: unknown
+    weekly: unknown
+  }
+  transactions?: unknown
+  allPairs: unknown
+  allTokens: unknown
+  topLps: unknown
+}
+
+interface IGlobalDataActions {
+  update: (data: IGlobalData) => void
+  updateAllPairsInUbeswap: (pairs: AllPairsQuery['pairs']) => void
+  updateAllTokensInUbeswap: (tokens: unknown[]) => void
+  updateChart: (data: unknown, weekly: unknown) => void
+  updateTransactions: (txns: unknown) => void
+  updateTopLps: (lps: unknown) => void
+  updateCeloPrice: (newPrice: unknown, oneDayPrice: unknown, priceChange: unknown) => void
+}
+
+const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
 
 function useGlobalDataContext() {
   return useContext(GlobalDataContext)
@@ -93,6 +117,7 @@ function reducer(state, { type, payload }) {
     case UPDATE_CELO_PRICE: {
       const { celoPrice, oneDayPrice, celoPriceChange } = payload
       return {
+        ...state,
         [CELO_PRICE_KEY]: celoPrice,
         oneDayPrice,
         celoPriceChange,
@@ -230,7 +255,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
 type IGlobalData = GlobalDataQuery['ubeswapFactories'][number] &
   Partial<{
     oneDayVolumeUSD: number
-    oneWeekVolume: number
+    oneWeekVolumeUSD: number
     weeklyVolumeChange: number
     volumeChangeUSD: number
     liquidityChangeUSD: number
@@ -334,8 +359,8 @@ async function getGlobalData(): Promise<IGlobalData | null> {
 
       const [oneDayTxns, txnChange] = get2DayPercentChange(
         data.txCount,
-        oneDayData.txCount ? oneDayData.txCount : 0,
-        twoDayData.txCount ? twoDayData.txCount : 0
+        oneDayData.txCount ? oneDayData.txCount : '0',
+        twoDayData.txCount ? twoDayData.txCount : '0'
       )
 
       // format the total liquidity in USD
@@ -518,11 +543,18 @@ const getCeloPrice = async () => {
   let priceChangeCelo = 0
 
   try {
-    const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     const result = await client.query<CurrentCeloPriceQuery>({
       query: CURRENT_CELO_PRICE,
       fetchPolicy: 'cache-first',
     })
+    const currentPrice = result?.data?.bundles[0]?.celoPrice
+    celoPrice = parseFloat(currentPrice)
+  } catch (e) {
+    console.log(e)
+  }
+
+  try {
+    const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     const resultOneDay = oneDayBlock
       ? await client.query<CeloPriceQuery, CeloPriceQueryVariables>({
           query: CELO_PRICE,
@@ -532,10 +564,8 @@ const getCeloPrice = async () => {
           },
         })
       : null
-    const currentPrice = result?.data?.bundles[0]?.celoPrice
-    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? currentPrice
-    priceChangeCelo = getPercentChange(currentPrice, oneDayBackPrice)
-    celoPrice = parseFloat(currentPrice)
+    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? celoPrice.toString()
+    priceChangeCelo = getPercentChange(celoPrice.toString(), oneDayBackPrice)
     celoPriceOneDay = parseFloat(oneDayBackPrice)
   } catch (e) {
     console.log(e)
@@ -550,13 +580,13 @@ const TOKENS_TO_FETCH = 500
 /**
  * Loop through every pair on ubeswap, used for search
  */
-async function getAllPairsOnUbeswap() {
+async function getAllPairsOnUbeswap(): Promise<AllPairsQuery['pairs']> {
   try {
     let allFound = false
-    let pairs = []
+    let pairs: AllPairsQuery['pairs'][number][] = []
     let skipCount = 0
     while (!allFound) {
-      const result = await client.query({
+      const result = await client.query<AllPairsQuery, AllPairsQueryVariables>({
         query: ALL_PAIRS,
         variables: {
           skip: skipCount,
@@ -611,24 +641,27 @@ export function useGlobalData(): Partial<IGlobalData> {
 
   const data: IGlobalData | undefined = state?.globalData
 
-  useEffect(() => {
-    async function fetchData() {
-      const globalData = await getGlobalData()
+  const fetchData = useCallback(async () => {
+    const globalData = await getGlobalData()
 
-      globalData && update(globalData)
-
-      const allPairs = await getAllPairsOnUbeswap()
-      updateAllPairsInUbeswap(allPairs)
-
-      const allTokens = await getAllTokensOnUbeswap()
-      updateAllTokensInUbeswap(allTokens)
+    if (globalData) {
+      update(globalData)
     }
+
+    const allPairs = await getAllPairsOnUbeswap()
+    updateAllPairsInUbeswap(allPairs)
+
+    const allTokens = await getAllTokensOnUbeswap()
+    updateAllTokensInUbeswap(allTokens)
+  }, [update, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+
+  useEffect(() => {
     if (!data) {
       fetchData()
     }
-  }, [update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+  }, [data, fetchData, state])
 
-  return data || {}
+  return data ?? {}
 }
 
 export function useGlobalChartData() {

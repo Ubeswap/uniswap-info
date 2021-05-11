@@ -1,3 +1,4 @@
+import { ApolloQueryResult } from 'apollo-client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
@@ -36,7 +37,6 @@ import {
 } from '../utils'
 import { updateNameData } from '../utils/data'
 import { useLatestBlocks } from './Application'
-import { useCeloPrice } from './GlobalData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_TOKEN_TXNS = 'UPDATE_TOKEN_TXNS'
@@ -230,12 +230,14 @@ export default function Provider({ children }: { children: React.ReactNode }): J
   )
 }
 
-const getTopTokens = async (celoPrice, celoPriceOld) => {
+const getTopTokens = async () => {
   const utcCurrentTime = dayjs()
   const utcOneDayBack = utcCurrentTime.subtract(1, 'day').unix()
   const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').unix()
   const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
   const twoDayBlock = await getBlockFromTimestamp(utcTwoDaysBack)
+
+  console.log('top tokens')
 
   try {
     const current = await client.query<TokensCurrentQuery>({
@@ -243,35 +245,43 @@ const getTopTokens = async (celoPrice, celoPriceOld) => {
       fetchPolicy: 'cache-first',
     })
 
-    const oneDayResult = await client.query<TokensDynamicQuery, TokensDynamicQueryVariables>({
-      query: TOKENS_DYNAMIC,
-      fetchPolicy: 'cache-first',
-      variables: {
-        block: oneDayBlock,
-      },
-    })
+    const oneDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
+      .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
+        query: TOKENS_DYNAMIC,
+        fetchPolicy: 'cache-first',
+        variables: {
+          block: oneDayBlock,
+        },
+      })
+      .catch((e) => {
+        console.error(e)
+        return null
+      })
 
-    const twoDayResult = await client.query<TokensDynamicQuery, TokensDynamicQueryVariables>({
-      query: TOKENS_DYNAMIC,
-      fetchPolicy: 'cache-first',
-      variables: {
-        block: twoDayBlock,
-      },
-    })
+    const twoDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
+      .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
+        query: TOKENS_DYNAMIC,
+        fetchPolicy: 'cache-first',
+        variables: {
+          block: twoDayBlock,
+        },
+      })
+      .catch((e) => {
+        console.error(e)
+        return null
+      })
 
-    const oneDayData = oneDayResult?.data?.tokens.reduce((obj, cur, i) => {
+    const oneDayData = oneDayResult?.data?.tokens.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
-    const twoDayData = twoDayResult?.data?.tokens.reduce((obj, cur, i) => {
+    const twoDayData = twoDayResult?.data?.tokens.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
     const bulkResults = await Promise.all(
-      current &&
-        oneDayData &&
-        twoDayData &&
-        current?.data?.tokens.map(async (token) => {
+      (current &&
+        current?.data?.tokens?.map(async (token) => {
           const data = token
 
           // let liquidityDataThisToken = liquidityData?.[token.id]
@@ -280,40 +290,48 @@ const getTopTokens = async (celoPrice, celoPriceOld) => {
 
           // catch the case where token wasnt in top list in previous days
           if (!oneDayHistory) {
-            const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
-              query: TOKEN_DATA,
-              fetchPolicy: 'cache-first',
-              variables: {
-                tokenAddress: token.id,
-                tokenAddressID: token.id,
-                block: oneDayBlock,
-              },
-            })
-            oneDayHistory = oneDayResult.data.tokens[0]
+            try {
+              const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
+                query: TOKEN_DATA,
+                fetchPolicy: 'cache-first',
+                variables: {
+                  tokenAddress: token.id,
+                  tokenAddressID: token.id,
+                  block: oneDayBlock,
+                },
+              })
+              oneDayHistory = oneDayResult.data.tokens[0]
+            } catch (e) {
+              console.error(e)
+            }
           }
           if (!twoDayHistory) {
-            const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
-              query: TOKEN_DATA,
-              fetchPolicy: 'cache-first',
-              variables: {
-                tokenAddress: token.id,
-                tokenAddressID: token.id,
-                block: twoDayBlock,
-              },
-            })
-            twoDayHistory = twoDayResult.data.tokens[0]
+            try {
+              const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
+                query: TOKEN_DATA,
+                fetchPolicy: 'cache-first',
+                variables: {
+                  tokenAddress: token.id,
+                  tokenAddressID: token.id,
+                  block: twoDayBlock,
+                },
+              })
+              twoDayHistory = twoDayResult.data.tokens[0]
+            } catch (e) {
+              console.error(e)
+            }
           }
 
           // calculate percentage changes and daily changes
           const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
             data.tradeVolumeUSD,
-            oneDayHistory?.tradeVolumeUSD ?? 0,
-            twoDayHistory?.tradeVolumeUSD ?? 0
+            oneDayHistory?.tradeVolumeUSD ?? '0',
+            twoDayHistory?.tradeVolumeUSD ?? '0'
           )
           const [oneDayTxns, txnChange] = get2DayPercentChange(
             data.txCount,
-            oneDayHistory?.txCount ?? 0,
-            twoDayHistory?.txCount ?? 0
+            oneDayHistory?.txCount ?? '0',
+            twoDayHistory?.txCount ?? '0'
           )
 
           const currentLiquidityUSD = parseFloat(data?.totalLiquidity) * parseFloat(data?.derivedCUSD)
@@ -353,7 +371,8 @@ const getTopTokens = async (celoPrice, celoPriceOld) => {
             oneDayData: oneDayHistory,
             twoDayData: twoDayHistory,
           }
-        })
+        })) ??
+        []
     )
 
     return bulkResults
@@ -438,23 +457,19 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     // calculate percentage changes and daily changes
     const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
       data.tradeVolumeUSD,
-      oneDayData?.tradeVolumeUSD ?? 0,
-      twoDayData?.tradeVolumeUSD ?? 0
+      oneDayData?.tradeVolumeUSD,
+      twoDayData?.tradeVolumeUSD
     )
 
     // calculate percentage changes and daily changes
     const [oneDayVolumeUT, volumeChangeUT] = get2DayPercentChange(
       data.untrackedVolumeUSD,
-      oneDayData?.untrackedVolumeUSD ?? 0,
-      twoDayData?.untrackedVolumeUSD ?? 0
+      oneDayData?.untrackedVolumeUSD,
+      twoDayData?.untrackedVolumeUSD
     )
 
     // calculate percentage changes and daily changes
-    const [oneDayTxns, txnChange] = get2DayPercentChange(
-      data.txCount,
-      oneDayData?.txCount ?? 0,
-      twoDayData?.txCount ?? 0
-    )
+    const [oneDayTxns, txnChange] = get2DayPercentChange(data.txCount, oneDayData?.txCount, twoDayData?.txCount)
 
     const priceChangeUSD = getPercentChange(data?.derivedCUSD, oneDayData?.derivedCUSD ?? 0)
 
@@ -514,6 +529,7 @@ const getTokenTransactions = async (allPairsFormatted: string[]): Promise<Partia
   } catch (e) {
     console.log(e)
   }
+
   return {}
 }
 
@@ -686,30 +702,30 @@ const getTokenChartData = async (tokenAddress: string): Promise<readonly TokenCh
 
 export function Updater() {
   const [, { updateTopTokens }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
   useEffect(() => {
     async function getData() {
       // get top pairs for overview list
-      const topTokens = await getTopTokens(celoPrice, celoPriceOld)
-      topTokens && updateTopTokens(topTokens)
+      const topTokens = await getTopTokens()
+      if (topTokens) {
+        updateTopTokens(topTokens)
+      }
     }
-    celoPrice && celoPriceOld && getData()
-  }, [celoPrice, celoPriceOld, updateTopTokens])
+    getData()
+  }, [updateTopTokens])
   return null
 }
 
-export function useTokenData(tokenAddress) {
+export function useTokenData(tokenAddress: string) {
   const [state, { update }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
   const tokenData = state?.[tokenAddress]
 
   useEffect(() => {
-    if (!tokenData && celoPrice && celoPriceOld && isAddress(tokenAddress)) {
+    if (!tokenData && isAddress(tokenAddress)) {
       getTokenData(tokenAddress).then((data) => {
         update(tokenAddress, data)
       })
     }
-  }, [celoPrice, celoPriceOld, tokenAddress, tokenData, update])
+  }, [tokenAddress, tokenData, update])
 
   return tokenData || {}
 }
@@ -757,7 +773,6 @@ export function useTokenPairs(tokenAddress) {
 
 export function useTokenDataCombined(tokenAddresses: readonly string[]) {
   const [state, { updateCombinedVolume }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
 
   const volume = state?.combinedVol
 
@@ -783,10 +798,10 @@ export function useTokenDataCombined(tokenAddresses: readonly string[]) {
           console.log('error fetching combined data')
         })
     }
-    if (!volume && celoPrice && celoPriceOld) {
+    if (!volume) {
       fetchDatas()
     }
-  }, [tokenAddresses, celoPrice, celoPriceOld, volume, updateCombinedVolume])
+  }, [tokenAddresses, volume, updateCombinedVolume])
 
   return volume
 }

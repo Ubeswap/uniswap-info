@@ -167,7 +167,8 @@ const TradingViewChart = ({
 
       // format numbers
       let percentChange = baseChange?.toFixed(2)
-      let formattedPercentChange = (percentChange > 0 ? '+' : '') + percentChange + '%'
+      let formattedPercentChange =
+        percentChange !== undefined ? (percentChange > 0 ? '+' : '') + percentChange + '%' : '--%'
       let color = percentChange >= 0 ? 'green' : 'red'
 
       // get the title of the chart
@@ -177,7 +178,7 @@ const TradingViewChart = ({
             type === CHART_TYPES.BAR && !useWeekly ? '(24hr)' : ''
           }</div>` +
           `<div style="font-size: 22px; margin: 4px 0px; color:${textColor}" >` +
-          formattedNum(base ?? 0, true) +
+          (base ? formattedNum(base ?? 0, true) : 'Unknown') +
           `<span style="margin-left: 10px; font-size: 16px; color: ${color};">${formattedPercentChange}</span>` +
           '</div>'
       }

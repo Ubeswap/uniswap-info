@@ -205,36 +205,40 @@ async function getBulkPairData(pairList) {
 
     const [oneDayResult, twoDayResult, oneWeekResult] = await Promise.all(
       [b1, b2, bWeek].map(async (block) => {
-        const result = await client.query<PairsHistoricalBulkQuery, PairsHistoricalBulkQueryVariables>({
-          query: PAIRS_HISTORICAL_BULK,
-          fetchPolicy: 'cache-first',
-          variables: {
-            block,
-            pairs: pairList,
-          },
-        })
-        return result
+        try {
+          const { data } = await client.query<PairsHistoricalBulkQuery, PairsHistoricalBulkQueryVariables>({
+            query: PAIRS_HISTORICAL_BULK,
+            fetchPolicy: 'cache-first',
+            variables: {
+              block,
+              pairs: pairList,
+            },
+          })
+          return data.pairs ?? []
+        } catch (e) {
+          console.error(e)
+          return []
+        }
       })
     )
 
-    const oneDayData = oneDayResult?.data?.pairs.reduce((obj, cur, i) => {
+    const oneDayData = oneDayResult.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
-    const twoDayData = twoDayResult?.data?.pairs.reduce((obj, cur, i) => {
+    const twoDayData = twoDayResult.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
-    const oneWeekData = oneWeekResult?.data?.pairs.reduce((obj, cur, i) => {
+    const oneWeekData = oneWeekResult.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
     const pairData = await Promise.all(
-      current &&
-        current.data.pairs.map(async (pair) => {
-          const data: PairFieldsFragment | undefined = pair
-          let oneDayHistory: PairFieldsFragment | undefined = oneDayData?.[pair.id]
-          if (!oneDayHistory) {
+      current.data.pairs.map(async (pair) => {
+        let oneDayHistory: PairFieldsFragment | undefined = oneDayData?.[pair.id]
+        if (!oneDayHistory) {
+          try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
               fetchPolicy: 'cache-first',
@@ -244,9 +248,13 @@ async function getBulkPairData(pairList) {
               },
             })
             oneDayHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          let twoDayHistory: PairFieldsFragment | undefined = twoDayData?.[pair.id]
-          if (!twoDayHistory) {
+        }
+        let twoDayHistory: PairFieldsFragment | undefined = twoDayData?.[pair.id]
+        if (!twoDayHistory) {
+          try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
               fetchPolicy: 'cache-first',
@@ -256,9 +264,13 @@ async function getBulkPairData(pairList) {
               },
             })
             twoDayHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          let oneWeekHistory: PairFieldsFragment | undefined = oneWeekData?.[pair.id]
-          if (!oneWeekHistory) {
+        }
+        let oneWeekHistory: PairFieldsFragment | undefined = oneWeekData?.[pair.id]
+        if (!oneWeekHistory) {
+          try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
               fetchPolicy: 'cache-first',
@@ -268,9 +280,12 @@ async function getBulkPairData(pairList) {
               },
             })
             oneWeekHistory = newData.data.pairs[0]
+          } catch (e) {
+            console.error(e)
           }
-          return parseData(data, oneDayHistory, twoDayHistory, oneWeekHistory, b1)
-        })
+        }
+        return parseData(pair, oneDayHistory, twoDayHistory, oneWeekHistory, b1)
+      })
     )
     return pairData
   } catch (e) {
@@ -280,21 +295,21 @@ async function getBulkPairData(pairList) {
 
 function parseData(
   data: PairFieldsFragment,
-  oneDayData: PairFieldsFragment,
-  twoDayData: PairFieldsFragment,
-  oneWeekData: PairFieldsFragment,
-  oneDayBlock: number
+  oneDayData?: PairFieldsFragment,
+  twoDayData?: PairFieldsFragment,
+  oneWeekData?: PairFieldsFragment,
+  oneDayBlock?: number
 ) {
   // get volume changes
   const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
     data?.volumeUSD,
-    oneDayData?.volumeUSD ? oneDayData.volumeUSD : 0,
-    twoDayData?.volumeUSD ? twoDayData.volumeUSD : 0
+    oneDayData?.volumeUSD ? oneDayData.volumeUSD : '0',
+    twoDayData?.volumeUSD ? twoDayData.volumeUSD : '0'
   )
   const [oneDayVolumeUntracked, volumeChangeUntracked] = get2DayPercentChange(
     data?.untrackedVolumeUSD,
-    oneDayData?.untrackedVolumeUSD ? parseFloat(oneDayData?.untrackedVolumeUSD) : 0,
-    twoDayData?.untrackedVolumeUSD ? twoDayData?.untrackedVolumeUSD : 0
+    oneDayData?.untrackedVolumeUSD ? oneDayData?.untrackedVolumeUSD : '0',
+    twoDayData?.untrackedVolumeUSD ? twoDayData?.untrackedVolumeUSD : '0'
   )
 
   const oneWeekVolumeUSD = oneWeekData
@@ -662,5 +677,5 @@ export function usePairChartData(pairAddress) {
  */
 export function useAllPairData() {
   const [state] = usePairDataContext()
-  return state || {}
+  return state ?? {}
 }

@@ -3,10 +3,10 @@ name: Lint
 on:
   push:
     branches:
-      - v2
+      - main
   pull_request_target:
     branches:
-      - v2
+      - main
 
 jobs:
   run-linters:
@@ -37,12 +37,7 @@ jobs:
             yarn-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run linters
-        uses: wearerequired/lint-action@77d70b9a07ecb93bc98dc46dc27d96c4f004d035
-        with:
-          github_token: ${{ secrets.github_token }}
-          eslint: true
-          eslint_extensions: js,jsx,ts,tsx,json
-          auto_fix: true
+        run: yarn lint
