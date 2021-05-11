@@ -230,7 +230,7 @@ export default function Provider({ children }: { children: React.ReactNode }): J
   )
 }
 
-const getTopTokens = async (celoPrice, celoPriceOld) => {
+const getTopTokens = async () => {
   const utcCurrentTime = dayjs()
   const utcOneDayBack = utcCurrentTime.subtract(1, 'day').unix()
   const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').unix()
@@ -686,15 +686,14 @@ const getTokenChartData = async (tokenAddress: string): Promise<readonly TokenCh
 
 export function Updater() {
   const [, { updateTopTokens }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
   useEffect(() => {
     async function getData() {
       // get top pairs for overview list
-      const topTokens = await getTopTokens(celoPrice, celoPriceOld)
+      const topTokens = await getTopTokens()
       topTokens && updateTopTokens(topTokens)
     }
-    celoPrice && celoPriceOld && getData()
-  }, [celoPrice, celoPriceOld, updateTopTokens])
+    getData()
+  }, [updateTopTokens])
   return null
 }
 

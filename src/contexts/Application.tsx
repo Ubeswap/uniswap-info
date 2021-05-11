@@ -28,6 +28,8 @@ type IApplicationState = {
   CURRENCY: string
   TIME_KEY: string
   [SESSION_START]: number
+  [LATEST_BLOCK]?: number
+  [HEAD_BLOCK]?: number
 } & Record<string, unknown>
 
 type IApplicationContext = [
@@ -191,7 +193,7 @@ export default function Provider({ children }: Props) {
   )
 }
 
-export function useLatestBlocks() {
+export function useLatestBlocks(): readonly [number | undefined, number | undefined] {
   const [state, { updateLatestBlock, updateHeadBlock }] = useApplicationContext()
 
   const latestBlock = state?.[LATEST_BLOCK]

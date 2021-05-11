@@ -58,7 +58,29 @@ const offsetVolumes = [
 dayjs.extend(utc)
 dayjs.extend(weekOfYear)
 
-const GlobalDataContext = createContext(null)
+interface IGlobalDataState {
+  globalData?: IGlobalData
+  chartData?: {
+    daily: unknown
+    weekly: unknown
+  }
+  transactions?: unknown
+  allPairs: unknown
+  allTokens: unknown
+  topLps: unknown
+}
+
+interface IGlobalDataActions {
+  update: (data: IGlobalData) => void
+  updateAllPairsInUbeswap: (pairs: unknown[]) => void
+  updateAllTokensInUbeswap: (tokens: unknown[]) => void
+  updateChart: (data: unknown, weekly: unknown) => void
+  updateTransactions: (txns: unknown) => void
+  updateTopLps: (lps: unknown) => void
+  updateCeloPrice: (newPrice: unknown, oneDayPrice: unknown, priceChange: unknown) => void
+}
+
+const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
 
 function useGlobalDataContext() {
   return useContext(GlobalDataContext)
@@ -93,6 +115,7 @@ function reducer(state, { type, payload }) {
     case UPDATE_CELO_PRICE: {
       const { celoPrice, oneDayPrice, celoPriceChange } = payload
       return {
+        ...state,
         [CELO_PRICE_KEY]: celoPrice,
         oneDayPrice,
         celoPriceChange,
@@ -611,24 +634,27 @@ export function useGlobalData(): Partial<IGlobalData> {
 
   const data: IGlobalData | undefined = state?.globalData
 
-  useEffect(() => {
-    async function fetchData() {
-      const globalData = await getGlobalData()
+  const fetchData = useCallback(async () => {
+    const globalData = await getGlobalData()
 
-      globalData && update(globalData)
-
-      const allPairs = await getAllPairsOnUbeswap()
-      updateAllPairsInUbeswap(allPairs)
-
-      const allTokens = await getAllTokensOnUbeswap()
-      updateAllTokensInUbeswap(allTokens)
+    if (globalData) {
+      update(globalData)
     }
+
+    const allPairs = await getAllPairsOnUbeswap()
+    updateAllPairsInUbeswap(allPairs)
+
+    const allTokens = await getAllTokensOnUbeswap()
+    updateAllTokensInUbeswap(allTokens)
+  }, [update, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+
+  useEffect(() => {
     if (!data) {
       fetchData()
     }
-  }, [update, data, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+  }, [data, fetchData, state])
 
-  return data || {}
+  return data ?? {}
 }
 
 export function useGlobalChartData() {

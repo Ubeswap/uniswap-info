@@ -171,7 +171,7 @@ export async function getBlockFromTimestamp(timestamp: number): Promise<number> 
  * @param {Array} timestamps
  */
 export async function getBlocksFromTimestamps(
-  timestamps,
+  timestamps?: readonly number[],
   skipCount = 500
 ): Promise<readonly { timestamp: number; number: number }[]> {
   if (timestamps?.length === 0) {
