@@ -543,11 +543,18 @@ const getCeloPrice = async () => {
   let priceChangeCelo = 0
 
   try {
-    const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     const result = await client.query<CurrentCeloPriceQuery>({
       query: CURRENT_CELO_PRICE,
       fetchPolicy: 'cache-first',
     })
+    const currentPrice = result?.data?.bundles[0]?.celoPrice
+    celoPrice = parseFloat(currentPrice)
+  } catch (e) {
+    console.log(e)
+  }
+
+  try {
+    const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     const resultOneDay = oneDayBlock
       ? await client.query<CeloPriceQuery, CeloPriceQueryVariables>({
           query: CELO_PRICE,
@@ -557,10 +564,8 @@ const getCeloPrice = async () => {
           },
         })
       : null
-    const currentPrice = result?.data?.bundles[0]?.celoPrice
-    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? currentPrice
-    priceChangeCelo = getPercentChange(currentPrice, oneDayBackPrice)
-    celoPrice = parseFloat(currentPrice)
+    const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? celoPrice.toString()
+    priceChangeCelo = getPercentChange(celoPrice.toString(), oneDayBackPrice)
     celoPriceOneDay = parseFloat(oneDayBackPrice)
   } catch (e) {
     console.log(e)
