@@ -1,4 +1,3 @@
-// TODO: Update graphs schema names with ubeswap
 import { DocumentNode } from 'graphql'
 import gql from 'graphql-tag'
 
