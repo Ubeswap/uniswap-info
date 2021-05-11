@@ -280,28 +280,36 @@ const getTopTokens = async () => {
 
           // catch the case where token wasnt in top list in previous days
           if (!oneDayHistory) {
-            const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
-              query: TOKEN_DATA,
-              fetchPolicy: 'cache-first',
-              variables: {
-                tokenAddress: token.id,
-                tokenAddressID: token.id,
-                block: oneDayBlock,
-              },
-            })
-            oneDayHistory = oneDayResult.data.tokens[0]
+            try {
+              const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
+                query: TOKEN_DATA,
+                fetchPolicy: 'cache-first',
+                variables: {
+                  tokenAddress: token.id,
+                  tokenAddressID: token.id,
+                  block: oneDayBlock,
+                },
+              })
+              oneDayHistory = oneDayResult.data.tokens[0]
+            } catch (e) {
+              console.error(e)
+            }
           }
           if (!twoDayHistory) {
-            const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
-              query: TOKEN_DATA,
-              fetchPolicy: 'cache-first',
-              variables: {
-                tokenAddress: token.id,
-                tokenAddressID: token.id,
-                block: twoDayBlock,
-              },
-            })
-            twoDayHistory = twoDayResult.data.tokens[0]
+            try {
+              const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
+                query: TOKEN_DATA,
+                fetchPolicy: 'cache-first',
+                variables: {
+                  tokenAddress: token.id,
+                  tokenAddressID: token.id,
+                  block: twoDayBlock,
+                },
+              })
+              twoDayHistory = twoDayResult.data.tokens[0]
+            } catch (e) {
+              console.error(e)
+            }
           }
 
           // calculate percentage changes and daily changes

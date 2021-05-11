@@ -5,6 +5,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 
 import { client } from '../apollo/client'
 import {
+  AllPairsQuery,
+  AllPairsQueryVariables,
   CeloPriceQuery,
   CeloPriceQueryVariables,
   CurrentCeloPriceQuery,
@@ -72,7 +74,7 @@ interface IGlobalDataState {
 
 interface IGlobalDataActions {
   update: (data: IGlobalData) => void
-  updateAllPairsInUbeswap: (pairs: unknown[]) => void
+  updateAllPairsInUbeswap: (pairs: AllPairsQuery['pairs']) => void
   updateAllTokensInUbeswap: (tokens: unknown[]) => void
   updateChart: (data: unknown, weekly: unknown) => void
   updateTransactions: (txns: unknown) => void
@@ -573,13 +575,13 @@ const TOKENS_TO_FETCH = 500
 /**
  * Loop through every pair on ubeswap, used for search
  */
-async function getAllPairsOnUbeswap() {
+async function getAllPairsOnUbeswap(): Promise<AllPairsQuery['pairs']> {
   try {
     let allFound = false
-    let pairs = []
+    let pairs: AllPairsQuery['pairs'][number][] = []
     let skipCount = 0
     while (!allFound) {
-      const result = await client.query({
+      const result = await client.query<AllPairsQuery, AllPairsQueryVariables>({
         query: ALL_PAIRS,
         variables: {
           skip: skipCount,
