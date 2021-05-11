@@ -18,9 +18,3 @@ yarn
 ```bash
 yarn start
 ```
-
-### TODOs
-
-In addition to marked TODOs in the code:
-
-- Celo Explorer links need to be https://explorer.celo.org/
