@@ -37,7 +37,6 @@ import {
 } from '../utils'
 import { updateNameData } from '../utils/data'
 import { useLatestBlocks } from './Application'
-import { useCeloPrice } from './GlobalData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_TOKEN_TXNS = 'UPDATE_TOKEN_TXNS'
@@ -238,16 +237,13 @@ const getTopTokens = async () => {
   const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
   const twoDayBlock = await getBlockFromTimestamp(utcTwoDaysBack)
 
+  console.log('top tokens')
+
   try {
-    const current: ApolloQueryResult<TokensCurrentQuery> | null = await client
-      .query<TokensCurrentQuery>({
-        query: TOKENS_CURRENT,
-        fetchPolicy: 'cache-first',
-      })
-      .catch((e) => {
-        console.error(e)
-        return null
-      })
+    const current = await client.query<TokensCurrentQuery>({
+      query: TOKENS_CURRENT,
+      fetchPolicy: 'cache-first',
+    })
 
     const oneDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
       .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
@@ -285,8 +281,6 @@ const getTopTokens = async () => {
 
     const bulkResults = await Promise.all(
       (current &&
-        oneDayData &&
-        twoDayData &&
         current?.data?.tokens?.map(async (token) => {
           const data = token
 
@@ -539,6 +533,7 @@ const getTokenTransactions = async (allPairsFormatted: string[]): Promise<Partia
   } catch (e) {
     console.log(e)
   }
+
   return {}
 }
 
@@ -782,7 +777,6 @@ export function useTokenPairs(tokenAddress) {
 
 export function useTokenDataCombined(tokenAddresses: readonly string[]) {
   const [state, { updateCombinedVolume }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
 
   const volume = state?.combinedVol
 
@@ -808,10 +802,10 @@ export function useTokenDataCombined(tokenAddresses: readonly string[]) {
           console.log('error fetching combined data')
         })
     }
-    if (!volume && celoPrice && celoPriceOld) {
+    if (!volume) {
       fetchDatas()
     }
-  }, [tokenAddresses, celoPrice, celoPriceOld, volume, updateCombinedVolume])
+  }, [tokenAddresses, volume, updateCombinedVolume])
 
   return volume
 }
