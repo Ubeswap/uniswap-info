@@ -1,3 +1,4 @@
+import { ApolloQueryResult } from 'apollo-client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
@@ -238,40 +239,55 @@ const getTopTokens = async () => {
   const twoDayBlock = await getBlockFromTimestamp(utcTwoDaysBack)
 
   try {
-    const current = await client.query<TokensCurrentQuery>({
-      query: TOKENS_CURRENT,
-      fetchPolicy: 'cache-first',
-    })
+    const current: ApolloQueryResult<TokensCurrentQuery> | null = await client
+      .query<TokensCurrentQuery>({
+        query: TOKENS_CURRENT,
+        fetchPolicy: 'cache-first',
+      })
+      .catch((e) => {
+        console.error(e)
+        return null
+      })
 
-    const oneDayResult = await client.query<TokensDynamicQuery, TokensDynamicQueryVariables>({
-      query: TOKENS_DYNAMIC,
-      fetchPolicy: 'cache-first',
-      variables: {
-        block: oneDayBlock,
-      },
-    })
+    const oneDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
+      .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
+        query: TOKENS_DYNAMIC,
+        fetchPolicy: 'cache-first',
+        variables: {
+          block: oneDayBlock,
+        },
+      })
+      .catch((e) => {
+        console.error(e)
+        return null
+      })
 
-    const twoDayResult = await client.query<TokensDynamicQuery, TokensDynamicQueryVariables>({
-      query: TOKENS_DYNAMIC,
-      fetchPolicy: 'cache-first',
-      variables: {
-        block: twoDayBlock,
-      },
-    })
+    const twoDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
+      .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
+        query: TOKENS_DYNAMIC,
+        fetchPolicy: 'cache-first',
+        variables: {
+          block: twoDayBlock,
+        },
+      })
+      .catch((e) => {
+        console.error(e)
+        return null
+      })
 
-    const oneDayData = oneDayResult?.data?.tokens.reduce((obj, cur, i) => {
+    const oneDayData = oneDayResult?.data?.tokens.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
-    const twoDayData = twoDayResult?.data?.tokens.reduce((obj, cur, i) => {
+    const twoDayData = twoDayResult?.data?.tokens.reduce((obj, cur) => {
       return { ...obj, [cur.id]: cur }
     }, {})
 
     const bulkResults = await Promise.all(
-      current &&
+      (current &&
         oneDayData &&
         twoDayData &&
-        current?.data?.tokens.map(async (token) => {
+        current?.data?.tokens?.map(async (token) => {
           const data = token
 
           // let liquidityDataThisToken = liquidityData?.[token.id]
@@ -361,7 +377,8 @@ const getTopTokens = async () => {
             oneDayData: oneDayHistory,
             twoDayData: twoDayHistory,
           }
-        })
+        })) ??
+        []
     )
 
     return bulkResults
@@ -698,25 +715,26 @@ export function Updater() {
     async function getData() {
       // get top pairs for overview list
       const topTokens = await getTopTokens()
-      topTokens && updateTopTokens(topTokens)
+      if (topTokens) {
+        updateTopTokens(topTokens)
+      }
     }
     getData()
   }, [updateTopTokens])
   return null
 }
 
-export function useTokenData(tokenAddress) {
+export function useTokenData(tokenAddress: string) {
   const [state, { update }] = useTokenDataContext()
-  const [celoPrice, celoPriceOld] = useCeloPrice()
   const tokenData = state?.[tokenAddress]
 
   useEffect(() => {
-    if (!tokenData && celoPrice && celoPriceOld && isAddress(tokenAddress)) {
+    if (!tokenData && isAddress(tokenAddress)) {
       getTokenData(tokenAddress).then((data) => {
         update(tokenAddress, data)
       })
     }
-  }, [celoPrice, celoPriceOld, tokenAddress, tokenData, update])
+  }, [tokenAddress, tokenData, update])
 
   return tokenData || {}
 }
