@@ -36,15 +36,23 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
   ReactGA.initialize('test', { testMode: true, debug: true })
 }
 
-Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN,
-  integrations: [new Integrations.BrowserTracing()],
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-})
+if (process.env.REACT_APP_SENTRY_DSN) {
+  const sentryCfg = {
+    environment: `${process.env.REACT_APP_VERCEL_ENV ?? 'unknown'}`,
+    release: `${process.env.REACT_APP_VERCEL_GIT_COMMIT_REF?.replace(/\//g, '--') ?? 'unknown'}-${
+      process.env.REACT_APP_VERCEL_GIT_COMMIT_SHA ?? 'unknown'
+    }`,
+  }
+  Sentry.init({
+    dsn: process.env.REACT_APP_SENTRY_DSN,
+    integrations: [new Integrations.BrowserTracing()],
+    tracesSampleRate: 0.2,
+    ...sentryCfg,
+  })
+  console.log(`Initializing Sentry environment at release ${sentryCfg.release} in environment ${sentryCfg.environment}`)
+} else {
+  console.warn(`REACT_APP_SENTRY_DSN not found. Sentry will not be loaded.`)
+}
 
 function ContextProviders({ children }: { children: React.ReactNode }) {
   return (
