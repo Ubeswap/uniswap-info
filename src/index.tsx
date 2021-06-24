@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react'
+import { Integrations } from '@sentry/tracing'
 import React from 'react'
 import { isMobile } from 'react-device-detect'
 import ReactDOM from 'react-dom'
@@ -33,6 +35,16 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
 } else {
   ReactGA.initialize('test', { testMode: true, debug: true })
 }
+
+Sentry.init({
+  dsn: process.env.REACT_APP_SENTRY_DSN,
+  integrations: [new Integrations.BrowserTracing()],
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+})
 
 function ContextProviders({ children }: { children: React.ReactNode }) {
   return (
