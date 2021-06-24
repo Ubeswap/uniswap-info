@@ -18,11 +18,11 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
-    'prettier/@typescript-eslint',
     'plugin:prettier/recommended',
   ],
   plugins: ['unused-imports', 'simple-import-sort', 'import'],
   rules: {
+    'react/prop-types': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     'prettier/prettier': 'error',
     '@typescript-eslint/no-explicit-any': 'off',

@@ -80,11 +80,13 @@ const Select = ({ options, onChange, setCapEth, capEth, tokenSelect = false, pla
       styles={isMobile ? customStylesMobile : customStyles}
       {...rest}
       components={{
+        // eslint-disable-next-line react/display-name
         DropdownIndicator: () => (
           <span role="img" aria-label={'viewer'} style={{ marginRight: '8px' }}>
             🔎
           </span>
         ),
+        // eslint-disable-next-line react/display-name
         Menu: ({ children, innerRef, innerProps }) => {
           return (
             <CustomMenu ref={innerRef} {...innerProps}>
