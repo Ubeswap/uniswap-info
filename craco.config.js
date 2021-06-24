@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const SentryWebpackPlugin = require('@sentry/webpack-plugin')
 
 const now = Math.floor(new Date().getTime() / 1000)
