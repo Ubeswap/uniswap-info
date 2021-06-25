@@ -85,8 +85,8 @@
   "scripts": {
     "codegen:local": "graphql-codegen",
     "pull-schema": "graphql-codegen -c codegen-schema.yml",
-    "start": "REACT_APP_SENTRY_DSN=$SENTRY_DSN craco start",
-    "build": "CI='' graphql-codegen && craco build",
+    "build": "REACT_APP_SENTRY_DSN=$SENTRY_DSN graphql-codegen && craco build",
+    "start": "craco start",
     "test": "craco test",
     "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
     "lint:fix": "eslint './**/*.{ts,tsx,js,jsx}' --fix"
