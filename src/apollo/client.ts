@@ -4,7 +4,7 @@ import { HttpLink } from 'apollo-link-http'
 
 export const client = new ApolloClient({
   link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/id/QmRSND9sqqzfutbMgCVJtW12mcsKBK5UCFqXh867AE9GyJ',
+    uri: 'https://api.thegraph.com/subgraphs/name/briungri/ubeswap-backup',
   }),
   cache: new InMemoryCache(),
 })
