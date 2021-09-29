@@ -3716,10 +3716,10 @@
     "@typescript-eslint/types" "4.28.0"
     eslint-visitor-keys "^2.0.0"
 
-"@ubeswap/default-token-list@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.0.6.tgz#5085fe855e0fd2b13c8c4c619c266e55cda27bab"
-  integrity sha512-4yG9UyK3ZlGmqEfeJrn99zDgCRA2OFERJ0aow0efMAjltdPEHVp4zlinO4ytGDe0QhycXBLG0YwE631BC7jmPg==
+"@ubeswap/default-token-list@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.0.7.tgz#c84cb76c0d1baf17b3843bb576b6f8e5e5e9c3d7"
+  integrity sha512-JRPuwipes/7yHxS0HnelG+wwUQtHze6s9OFkY7+tbVqAUHsPW+khe0vM6IEOAwF89Yat6wVRNuSl9BM0UDUYxA==
 
 "@ubeswap/subgraph@^1.0.0":
   version "1.0.0"
