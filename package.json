@@ -42,7 +42,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-unused-imports": "^1.1.1",
-    "ethers": "^4.0.39",
+    "ethers": "^5.5.0",
     "export-to-csv": "^0.2.1",
     "feather-icons": "^4.28.0",
     "graphql": "^14.7.0",
@@ -108,7 +108,7 @@
     "@craco/craco": "^6.1.2",
     "@sentry/react": "^6.7.2",
     "@sentry/tracing": "^6.7.2",
-    "@ubeswap/default-token-list": "^4.0.15",
+    "@ubeswap/default-token-list": "^4.0.16",
     "@ubeswap/subgraph": "^1.0.0"
   },
   "resolutions": {
