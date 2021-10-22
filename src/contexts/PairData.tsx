@@ -200,6 +200,7 @@ async function getBulkPairData(pairList) {
       variables: {
         allPairs: pairList,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
 
@@ -208,6 +209,7 @@ async function getBulkPairData(pairList) {
         try {
           const { data } = await client.query<PairsHistoricalBulkQuery, PairsHistoricalBulkQueryVariables>({
             query: PAIRS_HISTORICAL_BULK,
+            errorPolicy: 'ignore',
             fetchPolicy: 'cache-first',
             variables: {
               block,
@@ -241,6 +243,7 @@ async function getBulkPairData(pairList) {
           try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
+              errorPolicy: 'ignore',
               fetchPolicy: 'cache-first',
               variables: {
                 pairAddress: pair.id,
@@ -257,6 +260,7 @@ async function getBulkPairData(pairList) {
           try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
+              errorPolicy: 'ignore',
               fetchPolicy: 'cache-first',
               variables: {
                 pairAddress: pair.id,
@@ -273,6 +277,7 @@ async function getBulkPairData(pairList) {
           try {
             const newData = await client.query<PairDataQuery, PairDataQueryVariables>({
               query: PAIR_DATA,
+              errorPolicy: 'ignore',
               fetchPolicy: 'cache-first',
               variables: {
                 pairAddress: pair.id,
@@ -360,6 +365,7 @@ const getPairTransactions = async (pairAddress: string) => {
       variables: {
         allPairs: [pairAddress],
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'no-cache',
     })
     return {
@@ -390,6 +396,7 @@ const getPairChartData = async (pairAddress) => {
           pairAddress: pairAddress,
           skip,
         },
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
       skip += 1000
@@ -522,6 +529,7 @@ export function Updater(): null {
         data: { pairs },
       } = await client.query({
         query: PAIRS_CURRENT,
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
 

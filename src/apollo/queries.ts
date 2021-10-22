@@ -25,6 +25,7 @@ export const GET_BLOCK = gql`
       orderBy: timestamp
       orderDirection: asc
       where: { timestamp_gt: $timestampFrom, timestamp_lt: $timestampTo }
+      subgraphError: allow
     ) {
       id
       number
@@ -38,7 +39,7 @@ export const GET_BLOCKS = (timestamps: readonly number[]): DocumentNode => {
   queryString += timestamps.map((timestamp) => {
     return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${
       timestamp + 600
-    } }) {
+    } }, subgraphError: allow) {
       number
     }`
   })
@@ -50,7 +51,7 @@ export const POSITIONS_BY_BLOCK = (account, blocks) => {
   let queryString = 'query positionsByBlock {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}:liquidityPositions(where: {user: "${account}"}, block: { number: ${block.number} }) { 
+      t${block.timestamp}:liquidityPositions(where: {user: "${account}"}, block: { number: ${block.number} }, subgraphError: allow) { 
         liquidityTokenBalance
         pair  {
           id
@@ -71,7 +72,7 @@ export const PRICES_BY_BLOCK = (
   let queryString = 'query pricesByBlock {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}:token(id:"${tokenAddress}", block: { number: ${block.number} }) { 
+      t${block.timestamp}:token(id:"${tokenAddress}", block: { number: ${block.number} }, subgraphError: allow) { 
         derivedCUSD
       }
     `
@@ -79,7 +80,7 @@ export const PRICES_BY_BLOCK = (
   queryString += ','
   queryString += blocks.map(
     (block) => `
-      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }) { 
+      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }, subgraphError: allow) { 
         celoPrice
       }
     `
@@ -91,7 +92,13 @@ export const PRICES_BY_BLOCK = (
 
 export const TOP_LPS_PER_PAIRS = gql`
   query TopLpsPerPairs($pair: String!) {
-    liquidityPositions(where: { pair: $pair }, orderBy: liquidityTokenBalance, orderDirection: desc, first: 10) {
+    liquidityPositions(
+      where: { pair: $pair }
+      orderBy: liquidityTokenBalance
+      orderDirection: desc
+      first: 10
+      subgraphError: allow
+    ) {
       user {
         id
       }
@@ -107,7 +114,7 @@ export const HOURLY_PAIR_RATES = (pairAddress, blocks) => {
   let queryString = 'query blocks {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}: pair(id:"${pairAddress}", block: { number: ${block.number} }) { 
+      t${block.timestamp}: pair(id:"${pairAddress}", block: { number: ${block.number} }, subgraphError: allow) { 
         token0Price
         token1Price
       }
@@ -143,7 +150,7 @@ export const SHARE_VALUE = (
   let queryString = 'query HistoricalShareValue {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}:pair(id:"${pairAddress}", block: { number: ${block.number} }) { 
+      t${block.timestamp}:pair(id:"${pairAddress}", block: { number: ${block.number} }, subgraphError: allow) { 
         ...shareValue
       }
     `
@@ -151,7 +158,7 @@ export const SHARE_VALUE = (
   queryString += ','
   queryString += blocks.map(
     (block) => `
-      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }) { 
+      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }, subgraphError: allow) { 
         celoPrice
       }
     `
@@ -165,7 +172,7 @@ export const SHARE_VALUE = (
 
 export const CURRENT_CELO_PRICE = gql`
   query CurrentCeloPrice {
-    bundles(where: { id: "1" }) {
+    bundles(where: { id: "1" }, subgraphError: allow) {
       id
       celoPrice
     }
@@ -174,7 +181,7 @@ export const CURRENT_CELO_PRICE = gql`
 
 export const CELO_PRICE = gql`
   query CeloPrice($block: Int!) {
-    bundles(where: { id: "1" }, block: { number: $block }) {
+    bundles(where: { id: "1" }, block: { number: $block }, subgraphError: allow) {
       id
       celoPrice
     }
@@ -183,7 +190,7 @@ export const CELO_PRICE = gql`
 
 export const USER_MINTS_BUNRS_PER_PAIR = gql`
   query UserMintsBurnsPerPair($user: Bytes, $pair: String!) {
-    mints(where: { to: $user, pair: $pair }) {
+    mints(where: { to: $user, pair: $pair }, subgraphError: allow) {
       amountUSD
       amount0
       amount1
@@ -197,7 +204,7 @@ export const USER_MINTS_BUNRS_PER_PAIR = gql`
         }
       }
     }
-    burns(where: { sender: $user, pair: $pair }) {
+    burns(where: { sender: $user, pair: $pair }, subgraphError: allow) {
       amountUSD
       amount0
       amount1
@@ -216,7 +223,13 @@ export const USER_MINTS_BUNRS_PER_PAIR = gql`
 
 export const FIRST_SNAPSHOT = gql`
   query FirstSnapshot($user: String) {
-    liquidityPositionSnapshots(first: 1, where: { user: $user }, orderBy: timestamp, orderDirection: asc) {
+    liquidityPositionSnapshots(
+      first: 1
+      where: { user: $user }
+      orderBy: timestamp
+      orderDirection: asc
+      subgraphError: allow
+    ) {
       timestamp
     }
   }
@@ -224,7 +237,7 @@ export const FIRST_SNAPSHOT = gql`
 
 export const USER_HISTORY = gql`
   query UserHistory($user: String!, $skip: Int!) {
-    liquidityPositionSnapshots(first: 1000, skip: $skip, where: { user: $user }) {
+    liquidityPositionSnapshots(first: 1000, skip: $skip, where: { user: $user }, subgraphError: allow) {
       timestamp
       reserveUSD
       liquidityTokenBalance
@@ -271,7 +284,7 @@ export const liquidityPairFragment = gql`
 
 export const USER_POSITIONS = gql`
   query liquidityPositions($user: String!) {
-    liquidityPositions(where: { user: $user }) {
+    liquidityPositions(where: { user: $user }, subgraphError: allow) {
       pair {
         id
         ...liquidityPair
@@ -283,7 +296,7 @@ export const USER_POSITIONS = gql`
 
 export const USER_TRANSACTIONS = gql`
   query UserTransactions($user: Bytes) {
-    mints(orderBy: timestamp, orderDirection: desc, where: { to: $user }) {
+    mints(orderBy: timestamp, orderDirection: desc, where: { to: $user }, subgraphError: allow) {
       id
       transaction {
         id
@@ -306,7 +319,7 @@ export const USER_TRANSACTIONS = gql`
       amount1
       amountUSD
     }
-    burns(orderBy: timestamp, orderDirection: desc, where: { sender: $user }) {
+    burns(orderBy: timestamp, orderDirection: desc, where: { sender: $user }, subgraphError: allow) {
       id
       transaction {
         id
@@ -354,7 +367,14 @@ export const USER_TRANSACTIONS = gql`
 
 export const PAIR_CHART = gql`
   query PairDayDatasChart($pairAddress: Bytes!, $skip: Int!) {
-    pairDayDatas(first: 1000, skip: $skip, orderBy: date, orderDirection: asc, where: { pairAddress: $pairAddress }) {
+    pairDayDatas(
+      first: 1000
+      skip: $skip
+      orderBy: date
+      orderDirection: asc
+      where: { pairAddress: $pairAddress }
+      subgraphError: allow
+    ) {
       id
       date
       dailyVolumeToken0
@@ -367,7 +387,13 @@ export const PAIR_CHART = gql`
 
 export const PAIR_DAY_DATA = gql`
   query PairDayDatas($pairAddress: Bytes!, $date: Int!) {
-    pairDayDatas(first: 1, orderBy: date, orderDirection: desc, where: { pairAddress: $pairAddress, date_lt: $date }) {
+    pairDayDatas(
+      first: 1
+      orderBy: date
+      orderDirection: desc
+      where: { pairAddress: $pairAddress, date_lt: $date }
+      subgraphError: allow
+    ) {
       id
       date
       dailyVolumeToken0
@@ -387,7 +413,7 @@ export const PAIR_DAY_DATA_BULK = (pairs, startTimestamp) => {
   pairsString += ']'
   const queryString = `
     query PairDayDataBulk {
-      pairDayDatas(first: 1000, orderBy: date, orderDirection: asc, where: { pairAddress_in: ${pairsString}, date_gt: ${startTimestamp} }) {
+      pairDayDatas(first: 1000, orderBy: date, orderDirection: asc, where: { pairAddress_in: ${pairsString}, date_gt: ${startTimestamp} }, subgraphError: allow) {
         id
         pairAddress
         date
@@ -404,7 +430,14 @@ export const PAIR_DAY_DATA_BULK = (pairs, startTimestamp) => {
 
 export const GLOBAL_CHART = gql`
   query ubeswapDayDatas($startTime: Int!, $skip: Int!) {
-    ubeswapDayDatas(first: 1000, skip: $skip, where: { date_gt: $startTime }, orderBy: date, orderDirection: asc) {
+    ubeswapDayDatas(
+      first: 1000
+      skip: $skip
+      where: { date_gt: $startTime }
+      orderBy: date
+      orderDirection: asc
+      subgraphError: allow
+    ) {
       id
       date
       totalVolumeUSD
@@ -418,7 +451,7 @@ export const GLOBAL_CHART = gql`
 
 export const GLOBAL_DATA_LATEST = gql`
   query GlobalDataLatest($factoryAddress: ID!) {
-    ubeswapFactories(where: { id: $factoryAddress }) {
+    ubeswapFactories(where: { id: $factoryAddress }, subgraphError: allow) {
       id
       totalVolumeUSD
       totalVolumeCELO
@@ -433,7 +466,7 @@ export const GLOBAL_DATA_LATEST = gql`
 
 export const GLOBAL_DATA = gql`
   query GlobalData($block: Int!, $factoryAddress: ID!) {
-    ubeswapFactories(block: { number: $block }, where: { id: $factoryAddress }) {
+    ubeswapFactories(block: { number: $block }, where: { id: $factoryAddress }, subgraphError: allow) {
       id
       totalVolumeUSD
       totalVolumeCELO
@@ -448,7 +481,7 @@ export const GLOBAL_DATA = gql`
 
 export const GLOBAL_TXNS = gql`
   query GlobalTransactions {
-    transactions(first: 100, orderBy: timestamp, orderDirection: desc) {
+    transactions(first: 100, orderBy: timestamp, orderDirection: desc, subgraphError: allow) {
       mints(orderBy: timestamp, orderDirection: desc) {
         transaction {
           id
@@ -519,7 +552,7 @@ export const GLOBAL_TXNS = gql`
 
 export const ALL_TOKENS = gql`
   query AllTokens($skip: Int!) {
-    tokens(first: 500, skip: $skip) {
+    tokens(first: 500, skip: $skip, subgraphError: allow) {
       id
       name
       symbol
@@ -530,19 +563,29 @@ export const ALL_TOKENS = gql`
 
 export const TOKEN_SEARCH = gql`
   query TokenSearch($value: String, $id: ID) {
-    asSymbol: tokens(where: { symbol_contains: $value }, orderBy: totalLiquidity, orderDirection: desc) {
+    asSymbol: tokens(
+      where: { symbol_contains: $value }
+      orderBy: totalLiquidity
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
       symbol
       name
       totalLiquidity
     }
-    asName: tokens(where: { name_contains: $value }, orderBy: totalLiquidity, orderDirection: desc) {
+    asName: tokens(
+      where: { name_contains: $value }
+      orderBy: totalLiquidity
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
       symbol
       name
       totalLiquidity
     }
-    asAddress: tokens(where: { id: $id }, orderBy: totalLiquidity, orderDirection: desc) {
+    asAddress: tokens(where: { id: $id }, orderBy: totalLiquidity, orderDirection: desc, subgraphError: allow) {
       id
       symbol
       name
@@ -553,7 +596,7 @@ export const TOKEN_SEARCH = gql`
 
 export const PAIR_SEARCH = gql`
   query pairs($tokens: [String!], $id: ID) {
-    as0: pairs(where: { token0_in: $tokens }) {
+    as0: pairs(where: { token0_in: $tokens }, subgraphError: allow) {
       id
       token0 {
         id
@@ -566,7 +609,7 @@ export const PAIR_SEARCH = gql`
         name
       }
     }
-    as1: pairs(where: { token1_in: $tokens }) {
+    as1: pairs(where: { token1_in: $tokens }, subgraphError: allow) {
       id
       token0 {
         id
@@ -579,7 +622,7 @@ export const PAIR_SEARCH = gql`
         name
       }
     }
-    asAddress: pairs(where: { id: $id }) {
+    asAddress: pairs(where: { id: $id }, subgraphError: allow) {
       id
       token0 {
         id
@@ -597,7 +640,7 @@ export const PAIR_SEARCH = gql`
 
 export const ALL_PAIRS = gql`
   query AllPairs($skip: Int!) {
-    pairs(first: 500, skip: $skip, orderBy: trackedReserveUSD, orderDirection: desc) {
+    pairs(first: 500, skip: $skip, orderBy: trackedReserveUSD, orderDirection: desc, subgraphError: allow) {
       id
       token0 {
         id
@@ -648,7 +691,7 @@ const PairFields = gql`
 
 export const PAIRS_CURRENT = gql`
   query PairsCurrent {
-    pairs(first: 200, orderBy: reserveUSD, orderDirection: desc) {
+    pairs(first: 200, orderBy: reserveUSD, orderDirection: desc, subgraphError: allow) {
       id
     }
   }
@@ -656,7 +699,7 @@ export const PAIRS_CURRENT = gql`
 
 export const PAIR_DATA: DocumentNode = gql`
   query PairData($block: Int, $pairAddress: ID!) {
-    pairs(block: { number: $block }, where: { id: $pairAddress }) {
+    pairs(block: { number: $block }, where: { id: $pairAddress }, subgraphError: allow) {
       ...PairFields
     }
   }
@@ -666,7 +709,13 @@ export const PAIR_DATA: DocumentNode = gql`
 export const PAIRS_BULK = gql`
   ${PairFields}
   query PairsBulk($allPairs: [ID!]!) {
-    pairs(first: 500, where: { id_in: $allPairs }, orderBy: trackedReserveUSD, orderDirection: desc) {
+    pairs(
+      first: 500
+      where: { id_in: $allPairs }
+      orderBy: trackedReserveUSD
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       ...PairFields
     }
   }
@@ -680,6 +729,7 @@ export const PAIRS_HISTORICAL_BULK = gql`
       block: { number: $block }
       orderBy: trackedReserveUSD
       orderDirection: desc
+      subgraphError: allow
     ) {
       id
       reserveUSD
@@ -692,7 +742,14 @@ export const PAIRS_HISTORICAL_BULK = gql`
 
 export const TOKEN_CHART = gql`
   query TokenDayDatas($tokenAddr: String!, $skip: Int!) {
-    tokenDayDatas(first: 1000, skip: $skip, orderBy: date, orderDirection: asc, where: { token: $tokenAddr }) {
+    tokenDayDatas(
+      first: 1000
+      skip: $skip
+      orderBy: date
+      orderDirection: asc
+      where: { token: $tokenAddr }
+      subgraphError: allow
+    ) {
       id
       date
       priceUSD
@@ -723,7 +780,7 @@ const TokenFields = gql`
 export const TOKENS_CURRENT = gql`
   ${TokenFields}
   query TokensCurrent {
-    tokens(first: 200, orderBy: tradeVolumeUSD, orderDirection: desc) {
+    tokens(first: 200, orderBy: tradeVolumeUSD, orderDirection: desc, subgraphError: allow) {
       ...TokenFields
     }
   }
@@ -731,7 +788,7 @@ export const TOKENS_CURRENT = gql`
 
 export const TOKENS_DYNAMIC = gql`
   query TokensDynamic($block: Int!) {
-    tokens(block: { number: $block }, first: 200, orderBy: tradeVolumeUSD, orderDirection: desc) {
+    tokens(block: { number: $block }, first: 200, orderBy: tradeVolumeUSD, orderDirection: desc, subgraphError: allow) {
       ...TokenFields
     }
   }
@@ -740,13 +797,25 @@ export const TOKENS_DYNAMIC = gql`
 
 export const TOKEN_DATA_LATEST = gql`
   query TokenDataLatest($tokenAddress: String!, $tokenAddressID: ID!) {
-    tokens(where: { id: $tokenAddressID }) {
+    tokens(where: { id: $tokenAddressID }, subgraphError: allow) {
       ...TokenFields
     }
-    pairs0: pairs(where: { token0: $tokenAddress }, first: 50, orderBy: reserveUSD, orderDirection: desc) {
+    pairs0: pairs(
+      where: { token0: $tokenAddress }
+      first: 50
+      orderBy: reserveUSD
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
     }
-    pairs1: pairs(where: { token1: $tokenAddress }, first: 50, orderBy: reserveUSD, orderDirection: desc) {
+    pairs1: pairs(
+      where: { token1: $tokenAddress }
+      first: 50
+      orderBy: reserveUSD
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
     }
   }
@@ -755,13 +824,25 @@ export const TOKEN_DATA_LATEST = gql`
 
 export const TOKEN_DATA = gql`
   query TokenData($block: Int, $tokenAddress: String!, $tokenAddressID: ID!) {
-    tokens(block: { number: $block }, where: { id: $tokenAddressID }) {
+    tokens(block: { number: $block }, where: { id: $tokenAddressID }, subgraphError: allow) {
       ...TokenFields
     }
-    pairs0: pairs(where: { token0: $tokenAddress }, first: 50, orderBy: reserveUSD, orderDirection: desc) {
+    pairs0: pairs(
+      where: { token0: $tokenAddress }
+      first: 50
+      orderBy: reserveUSD
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
     }
-    pairs1: pairs(where: { token1: $tokenAddress }, first: 50, orderBy: reserveUSD, orderDirection: desc) {
+    pairs1: pairs(
+      where: { token1: $tokenAddress }
+      first: 50
+      orderBy: reserveUSD
+      orderDirection: desc
+      subgraphError: allow
+    ) {
       id
     }
   }
@@ -770,7 +851,7 @@ export const TOKEN_DATA = gql`
 
 export const FILTERED_TRANSACTIONS = gql`
   query FilteredTransactions($allPairs: [String!]!) {
-    mints(first: 20, where: { pair_in: $allPairs }, orderBy: timestamp, orderDirection: desc) {
+    mints(first: 20, where: { pair_in: $allPairs }, orderBy: timestamp, orderDirection: desc, subgraphError: allow) {
       transaction {
         id
         timestamp

@@ -293,16 +293,19 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       utcTwoWeeksBack,
     ])
 
+    console.log('HERE 0', GLOBAL_DATA_LATEST)
     // fetch the global data
     const result = await client.query<GlobalDataLatestQuery, GlobalDataLatestQueryVariables>({
       query: GLOBAL_DATA_LATEST,
       variables: {
         factoryAddress: FACTORY_ADDRESS,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     data = result.data.ubeswapFactories[0]
 
+    console.log('HERE 1')
     // fetch the historical data
     const oneDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
       query: GLOBAL_DATA,
@@ -310,16 +313,19 @@ async function getGlobalData(): Promise<IGlobalData | null> {
         block: oneDayBlock?.number,
         factoryAddress: FACTORY_ADDRESS,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     oneDayData = oneDayResult.data.ubeswapFactories[0]
 
+    console.log('HERE 2')
     const twoDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
       query: GLOBAL_DATA,
       variables: {
         block: twoDayBlock?.number,
         factoryAddress: FACTORY_ADDRESS,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     twoDayData = twoDayResult.data.ubeswapFactories[0]
@@ -330,6 +336,7 @@ async function getGlobalData(): Promise<IGlobalData | null> {
         block: oneWeekBlock?.number,
         factoryAddress: FACTORY_ADDRESS,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     const oneWeekData = oneWeekResult.data.ubeswapFactories[0]
@@ -340,6 +347,7 @@ async function getGlobalData(): Promise<IGlobalData | null> {
         block: twoWeekBlock?.number,
         factoryAddress: FACTORY_ADDRESS,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     const twoWeekData = twoWeekResult.data.ubeswapFactories[0]
@@ -406,6 +414,7 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
           startTime: oldestDateToFetch,
           skip,
         },
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
       skip += 1000
@@ -501,6 +510,7 @@ const getGlobalTransactions = async () => {
   try {
     const result = await client.query<GlobalTransactionsQuery>({
       query: GLOBAL_TXNS,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     result?.data?.transactions &&
@@ -545,6 +555,7 @@ const getCeloPrice = async () => {
   try {
     const result = await client.query<CurrentCeloPriceQuery>({
       query: CURRENT_CELO_PRICE,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     const currentPrice = result?.data?.bundles[0]?.celoPrice
@@ -558,6 +569,7 @@ const getCeloPrice = async () => {
     const resultOneDay = oneDayBlock
       ? await client.query<CeloPriceQuery, CeloPriceQueryVariables>({
           query: CELO_PRICE,
+          errorPolicy: 'ignore',
           fetchPolicy: 'cache-first',
           variables: {
             block: oneDayBlock,
@@ -591,6 +603,7 @@ async function getAllPairsOnUbeswap(): Promise<AllPairsQuery['pairs']> {
         variables: {
           skip: skipCount,
         },
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
       skipCount = skipCount + PAIRS_TO_FETCH
@@ -619,6 +632,7 @@ async function getAllTokensOnUbeswap() {
         variables: {
           skip: skipCount,
         },
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
       tokens = tokens.concat(result?.data?.tokens)
@@ -780,6 +794,7 @@ export function useTopLps() {
               variables: {
                 pair: pair.toString(),
               },
+              errorPolicy: 'ignore',
               fetchPolicy: 'cache-first',
             })
             if (results) {

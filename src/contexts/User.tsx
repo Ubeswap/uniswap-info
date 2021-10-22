@@ -178,6 +178,7 @@ export function useUserTransactions(account) {
           variables: {
             user: account,
           },
+          errorPolicy: 'ignore',
           fetchPolicy: 'no-cache',
         })
         if (result?.data) {
@@ -217,6 +218,7 @@ export function useUserSnapshots(account): UserHistoryQuery['liquidityPositionSn
               skip: skip,
               user: account,
             },
+            errorPolicy: 'ignore',
             fetchPolicy: 'cache-first',
           })
           allResults = allResults.concat(result.data.liquidityPositionSnapshots)
@@ -465,6 +467,7 @@ export function useUserPositions(account) {
           variables: {
             user: account,
           },
+          errorPolicy: 'ignore',
           fetchPolicy: 'no-cache',
         })
         if (result?.data?.liquidityPositions) {

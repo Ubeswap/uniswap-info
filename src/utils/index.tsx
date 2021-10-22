@@ -130,6 +130,7 @@ export async function splitQuery(query, localClient, vars, list, skipCount = 100
     const sliced = list.slice(skip, end)
     const result = await localClient.query({
       query: query(...vars, sliced),
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     fetchedData = {
@@ -158,6 +159,7 @@ export async function getBlockFromTimestamp(timestamp: number): Promise<number> 
       timestampFrom: timestamp.toString(),
       timestampTo: (timestamp + 600).toString(),
     },
+    errorPolicy: 'ignore',
     fetchPolicy: 'cache-first',
   })
   return parseInt(result?.data?.blocks?.[0]?.number ?? '0')
@@ -201,6 +203,7 @@ export async function getBlocksFromTimestamps(
 //   // get historical share values with time travel queries
 //   let result = await client.query({
 //     query: SHARE_VALUE(account, blocks),
+//     errorPolicy: 'ignore',
 //     fetchPolicy: 'cache-first',
 //   })
 
@@ -251,6 +254,7 @@ export async function getShareValueOverTime(
   // get historical share values with time travel queries
   const result = await client.query({
     query: SHARE_VALUE(pairAddress, blocks),
+    errorPolicy: 'ignore',
     fetchPolicy: 'cache-first',
   })
 

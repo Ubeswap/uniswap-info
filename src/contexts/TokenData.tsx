@@ -242,12 +242,14 @@ const getTopTokens = async () => {
   try {
     const current = await client.query<TokensCurrentQuery>({
       query: TOKENS_CURRENT,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
 
     const oneDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
       .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
         query: TOKENS_DYNAMIC,
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
         variables: {
           block: oneDayBlock,
@@ -261,6 +263,7 @@ const getTopTokens = async () => {
     const twoDayResult: ApolloQueryResult<TokensDynamicQuery> | null = await client
       .query<TokensDynamicQuery, TokensDynamicQueryVariables>({
         query: TOKENS_DYNAMIC,
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
         variables: {
           block: twoDayBlock,
@@ -293,6 +296,7 @@ const getTopTokens = async () => {
             try {
               const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
                 query: TOKEN_DATA,
+                errorPolicy: 'ignore',
                 fetchPolicy: 'cache-first',
                 variables: {
                   tokenAddress: token.id,
@@ -309,6 +313,7 @@ const getTopTokens = async () => {
             try {
               const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
                 query: TOKEN_DATA,
+                errorPolicy: 'ignore',
                 fetchPolicy: 'cache-first',
                 variables: {
                   tokenAddress: token.id,
@@ -415,6 +420,7 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     // fetch all current and historical data
     const result = await client.query<TokenDataLatestQuery, TokenDataLatestQueryVariables>({
       query: TOKEN_DATA_LATEST,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
       variables: { tokenAddress: address, tokenAddressID: address },
     })
@@ -423,6 +429,7 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     // get results from 24 hours in past
     const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
       query: TOKEN_DATA,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
       variables: { block: oneDayBlock, tokenAddress: address, tokenAddressID: address },
     })
@@ -431,6 +438,7 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     // get results from 48 hours in past
     const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
       query: TOKEN_DATA,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
       variables: { block: twoDayBlock, tokenAddress: address, tokenAddressID: address },
     })
@@ -440,6 +448,7 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     if (!oneDayData) {
       const oneDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
         query: TOKEN_DATA,
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
         variables: { block: oneDayBlock, tokenAddress: address, tokenAddressID: address },
       })
@@ -448,6 +457,7 @@ const getTokenData = async (address: string): Promise<TokenData | null> => {
     if (!twoDayData) {
       const twoDayResult = await client.query<TokenDataQuery, TokenDataQueryVariables>({
         query: TOKEN_DATA,
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
         variables: { block: twoDayBlock, tokenAddress: address, tokenAddressID: address },
       })
@@ -519,6 +529,7 @@ const getTokenTransactions = async (allPairsFormatted: string[]): Promise<Partia
       variables: {
         allPairs: allPairsFormatted,
       },
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
     return {
@@ -538,6 +549,7 @@ const getTokenPairs = async (tokenAddress: string) => {
     // fetch all current and historical data
     const result = await client.query<TokenDataLatestQuery, TokenDataLatestQueryVariables>({
       query: TOKEN_DATA_LATEST,
+      errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
       variables: {
         tokenAddress,
@@ -652,6 +664,7 @@ const getTokenChartData = async (tokenAddress: string): Promise<readonly TokenCh
           tokenAddr: tokenAddress,
           skip,
         },
+        errorPolicy: 'ignore',
         fetchPolicy: 'cache-first',
       })
       if (result.data.tokenDayDatas.length < 1000) {

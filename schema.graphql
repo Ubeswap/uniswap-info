@@ -11,6 +11,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Block
   blocks(
     skip: Int = 0
@@ -24,6 +25,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Block!]!
   bundle(
     id: ID!
@@ -33,6 +35,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Bundle
   bundles(
     skip: Int = 0
@@ -46,6 +49,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Bundle!]!
   burn(
     id: ID!
@@ -55,6 +59,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Burn
   burns(
     skip: Int = 0
@@ -68,6 +73,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Burn!]!
   indexingStatusForCurrentVersion(subgraphName: String!): SubgraphIndexingStatus
   indexingStatusForPendingVersion(subgraphName: String!): SubgraphIndexingStatus
@@ -81,6 +87,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): LiquidityPosition
   liquidityPositionSnapshot(
     id: ID!
@@ -90,6 +97,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): LiquidityPositionSnapshot
   liquidityPositionSnapshots(
     skip: Int = 0
@@ -103,6 +111,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [LiquidityPositionSnapshot!]!
   liquidityPositions(
     skip: Int = 0
@@ -116,6 +125,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [LiquidityPosition!]!
   mint(
     id: ID!
@@ -125,6 +135,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Mint
   mints(
     skip: Int = 0
@@ -138,6 +149,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Mint!]!
   pair(
     id: ID!
@@ -147,6 +159,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Pair
   pairDayData(
     id: ID!
@@ -156,6 +169,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): PairDayData
   pairDayDatas(
     skip: Int = 0
@@ -169,6 +183,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [PairDayData!]!
   pairHourData(
     id: ID!
@@ -178,6 +193,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): PairHourData
   pairHourDatas(
     skip: Int = 0
@@ -191,6 +207,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [PairHourData!]!
   pairs(
     skip: Int = 0
@@ -204,6 +221,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Pair!]!
   proofOfIndexing(subgraph: String!, blockNumber: Int!, blockHash: Bytes!, indexer: Bytes): Bytes
   swap(
@@ -214,6 +232,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Swap
   swaps(
     skip: Int = 0
@@ -227,6 +246,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Swap!]!
   token(
     id: ID!
@@ -236,6 +256,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Token
   tokenDayData(
     id: ID!
@@ -245,6 +266,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): TokenDayData
   tokenDayDatas(
     skip: Int = 0
@@ -258,6 +280,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [TokenDayData!]!
   tokens(
     skip: Int = 0
@@ -271,6 +294,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Token!]!
   transaction(
     id: ID!
@@ -280,6 +304,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Transaction
   transactions(
     skip: Int = 0
@@ -293,6 +318,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Transaction!]!
   ubeswapDayData(
     id: ID!
@@ -302,6 +328,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): UbeswapDayData
   ubeswapDayDatas(
     skip: Int = 0
@@ -315,6 +342,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [UbeswapDayData!]!
   ubeswapFactories(
     skip: Int = 0
@@ -328,6 +356,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [UbeswapFactory!]!
   ubeswapFactory(
     id: ID!
@@ -337,6 +366,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): UbeswapFactory
   user(
     id: ID!
@@ -346,6 +376,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): User
   users(
     skip: Int = 0
@@ -359,6 +390,7 @@ type Query {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [User!]!
 }
 input Block_height {
@@ -2301,6 +2333,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Block
   blocks(
     skip: Int = 0
@@ -2314,6 +2347,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Block!]!
   bundle(
     id: ID!
@@ -2323,6 +2357,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Bundle
   bundles(
     skip: Int = 0
@@ -2336,6 +2371,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Bundle!]!
   burn(
     id: ID!
@@ -2345,6 +2381,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Burn
   burns(
     skip: Int = 0
@@ -2358,6 +2395,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Burn!]!
   liquidityPosition(
     id: ID!
@@ -2367,6 +2405,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): LiquidityPosition
   liquidityPositionSnapshot(
     id: ID!
@@ -2376,6 +2415,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): LiquidityPositionSnapshot
   liquidityPositionSnapshots(
     skip: Int = 0
@@ -2389,6 +2429,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [LiquidityPositionSnapshot!]!
   liquidityPositions(
     skip: Int = 0
@@ -2402,6 +2443,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [LiquidityPosition!]!
   mint(
     id: ID!
@@ -2411,6 +2453,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Mint
   mints(
     skip: Int = 0
@@ -2424,6 +2467,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Mint!]!
   pair(
     id: ID!
@@ -2433,6 +2477,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Pair
   pairDayData(
     id: ID!
@@ -2442,6 +2487,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): PairDayData
   pairDayDatas(
     skip: Int = 0
@@ -2455,6 +2501,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [PairDayData!]!
   pairHourData(
     id: ID!
@@ -2464,6 +2511,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): PairHourData
   pairHourDatas(
     skip: Int = 0
@@ -2477,6 +2525,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [PairHourData!]!
   pairs(
     skip: Int = 0
@@ -2490,6 +2539,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Pair!]!
   swap(
     id: ID!
@@ -2499,6 +2549,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Swap
   swaps(
     skip: Int = 0
@@ -2512,6 +2563,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Swap!]!
   token(
     id: ID!
@@ -2521,6 +2573,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Token
   tokenDayData(
     id: ID!
@@ -2530,6 +2583,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): TokenDayData
   tokenDayDatas(
     skip: Int = 0
@@ -2543,6 +2597,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [TokenDayData!]!
   tokens(
     skip: Int = 0
@@ -2556,6 +2611,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Token!]!
   transaction(
     id: ID!
@@ -2565,6 +2621,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): Transaction
   transactions(
     skip: Int = 0
@@ -2578,6 +2635,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [Transaction!]!
   ubeswapDayData(
     id: ID!
@@ -2587,6 +2645,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): UbeswapDayData
   ubeswapDayDatas(
     skip: Int = 0
@@ -2600,6 +2659,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [UbeswapDayData!]!
   ubeswapFactories(
     skip: Int = 0
@@ -2613,6 +2673,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [UbeswapFactory!]!
   ubeswapFactory(
     id: ID!
@@ -2622,6 +2683,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): UbeswapFactory
   user(
     id: ID!
@@ -2631,6 +2693,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): User
   users(
     skip: Int = 0
@@ -2644,6 +2707,7 @@ type Subscription {
     block hash. Defaults to the latest block when omitted.
     """
     block: Block_height
+    subgraphError: allow
   ): [User!]!
 }
 type EthereumIndexingStatus implements ChainIndexingStatus {
