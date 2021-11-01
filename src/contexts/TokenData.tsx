@@ -237,8 +237,6 @@ const getTopTokens = async () => {
   const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
   const twoDayBlock = await getBlockFromTimestamp(utcTwoDaysBack)
 
-  console.log('top tokens')
-
   try {
     const current = await client.query<TokensCurrentQuery>({
       query: TOKENS_CURRENT,
@@ -304,7 +302,7 @@ const getTopTokens = async () => {
                   block: oneDayBlock,
                 },
               })
-              oneDayHistory = oneDayResult.data.tokens[0]
+              oneDayHistory = oneDayResult.data?.tokens[0]
             } catch (e) {
               console.error(e)
             }
@@ -321,7 +319,7 @@ const getTopTokens = async () => {
                   block: twoDayBlock,
                 },
               })
-              twoDayHistory = twoDayResult.data.tokens[0]
+              twoDayHistory = twoDayResult.data?.tokens[0]
             } catch (e) {
               console.error(e)
             }

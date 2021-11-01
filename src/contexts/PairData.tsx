@@ -267,7 +267,7 @@ async function getBulkPairData(pairList) {
                 block: b2,
               },
             })
-            twoDayHistory = newData.data.pairs[0]
+            twoDayHistory = newData.data?.pairs[0]
           } catch (e) {
             console.error(e)
           }
@@ -284,7 +284,7 @@ async function getBulkPairData(pairList) {
                 block: bWeek,
               },
             })
-            oneWeekHistory = newData.data.pairs[0]
+            oneWeekHistory = newData.data?.pairs[0]
           } catch (e) {
             console.error(e)
           }

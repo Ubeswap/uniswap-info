@@ -293,7 +293,6 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       utcTwoWeeksBack,
     ])
 
-    console.log('HERE 0', GLOBAL_DATA_LATEST)
     // fetch the global data
     const result = await client.query<GlobalDataLatestQuery, GlobalDataLatestQueryVariables>({
       query: GLOBAL_DATA_LATEST,
@@ -305,7 +304,6 @@ async function getGlobalData(): Promise<IGlobalData | null> {
     })
     data = result.data.ubeswapFactories[0]
 
-    console.log('HERE 1')
     // fetch the historical data
     const oneDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
       query: GLOBAL_DATA,
@@ -316,9 +314,8 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
-    oneDayData = oneDayResult.data.ubeswapFactories[0]
+    oneDayData = oneDayResult.data?.ubeswapFactories?.[0]
 
-    console.log('HERE 2')
     const twoDayResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
       query: GLOBAL_DATA,
       variables: {
@@ -328,7 +325,7 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
-    twoDayData = twoDayResult.data.ubeswapFactories[0]
+    twoDayData = twoDayResult.data?.ubeswapFactories[0]
 
     const oneWeekResult = await client.query<GlobalDataQuery, GlobalDataQueryVariables>({
       query: GLOBAL_DATA,
@@ -339,7 +336,7 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
-    const oneWeekData = oneWeekResult.data.ubeswapFactories[0]
+    const oneWeekData = oneWeekResult.data?.ubeswapFactories[0]
 
     const twoWeekResult = await client.query<GlobalDataQuery>({
       query: GLOBAL_DATA,
@@ -350,7 +347,7 @@ async function getGlobalData(): Promise<IGlobalData | null> {
       errorPolicy: 'ignore',
       fetchPolicy: 'cache-first',
     })
-    const twoWeekData = twoWeekResult.data.ubeswapFactories[0]
+    const twoWeekData = twoWeekResult.data?.ubeswapFactories[0]
 
     if (data && oneDayData && twoDayData && twoWeekData) {
       const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
