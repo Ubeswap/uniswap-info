@@ -28,8 +28,8 @@ module.exports = {
               commit: process.env.GIT_COMMIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA,
             },
             deploy: {
-              env: process.env.REACT_APP_SENTRY_ENVIRONMENT ?? process.env.VERCEL_ENV,
-              url: `https://${process.env.VERCEL_URL}`,
+              env: process.env.REACT_APP_SENTRY_ENVIRONMENT ?? process.env.VERCEL_ENV ?? 'unknown',
+              url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
               started: now,
             },
           })
