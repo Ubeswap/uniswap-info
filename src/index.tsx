@@ -38,10 +38,12 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
 
 if (process.env.REACT_APP_SENTRY_DSN) {
   const sentryCfg = {
-    environment: `${process.env.REACT_APP_VERCEL_ENV ?? 'unknown'}`,
-    release: `${process.env.REACT_APP_VERCEL_GIT_COMMIT_REF?.replace(/\//g, '--') ?? 'unknown'}-${
-      process.env.REACT_APP_VERCEL_GIT_COMMIT_SHA ?? 'unknown'
-    }`,
+    environment: process.env.REACT_APP_SENTRY_ENVIRONMENT ?? `${process.env.REACT_APP_VERCEL_ENV ?? 'unknown'}`,
+    release:
+      process.env.REACT_APP_SENTRY_RELEASE ??
+      `${process.env.REACT_APP_VERCEL_GIT_COMMIT_REF?.replace(/\//g, '--') ?? 'unknown'}-${
+        process.env.REACT_APP_VERCEL_GIT_COMMIT_SHA ?? 'unknown'
+      }`,
   }
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
