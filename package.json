@@ -10,7 +10,7 @@
     "@popperjs/core": "^2.4.2",
     "@reach/portal": "^0.10.3",
     "@reach/router": "^1.2.1",
-    "@sentry/webpack-plugin": "^1.15.1",
+    "@sentry/webpack-plugin": "^1.18.3",
     "@types/feather-icons": "^4.7.0",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.12.4",
@@ -107,8 +107,8 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@craco/craco": "^6.1.2",
-    "@sentry/react": "^6.7.2",
-    "@sentry/tracing": "^6.7.2",
+    "@sentry/react": "^6.15.0",
+    "@sentry/tracing": "^6.15.0",
     "@ubeswap/default-token-list": "^4.0.29",
     "@ubeswap/subgraph": "^1.0.0"
   },
