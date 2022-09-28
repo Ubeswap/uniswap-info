@@ -112,7 +112,7 @@
     "@craco/craco": "^6.1.2",
     "@sentry/react": "^6.15.0",
     "@sentry/tracing": "^6.15.0",
-    "@ubeswap/default-token-list": "^4.1.55",
+    "@ubeswap/default-token-list": "^4.1.56",
     "@ubeswap/subgraph": "^1.0.0"
   },
   "resolutions": {
