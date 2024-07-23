@@ -1,6 +1,6 @@
 import { transparentize } from 'polished'
 import React from 'react'
-import { Disc, List, PieChart, TrendingUp } from 'react-feather'
+import { Disc, ExternalLink, List, PieChart, TrendingUp } from 'react-feather'
 import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import styled from 'styled-components'
@@ -159,6 +159,13 @@ function SideNav({ history }) {
                     Accounts
                   </Option>
                 </BasicLink>
+
+                <Link href="https://info.ubeswap.org" target="_blank">
+                  <Option>
+                    <ExternalLink size={20} style={{ marginRight: '.75rem' }} />
+                    V3 Analytics
+                  </Option>
+                </Link>
               </AutoColumn>
             )}
           </AutoColumn>

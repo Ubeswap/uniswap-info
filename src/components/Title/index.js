@@ -92,6 +92,10 @@ export default function Title() {
                 Accounts
               </Option>
             </BasicLink>
+
+            <Link href="https://info.ubeswap.org" target="_blank">
+              <Option>V3 Info</Option>
+            </Link>
           </RowFixed>
         )}
       </Flex>

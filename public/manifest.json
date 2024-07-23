@@ -1,6 +1,6 @@
 {
-  "short_name": "Ubeswap Analytics",
-  "name": "Analytics for Ubeswap, a decentralized exchange on Celo.",
+  "short_name": "Ubeswap V2 Analytics",
+  "name": "Analytics for Ubeswap V2, a decentralized exchange on Celo.",
   "icons": [
     {
       "src": "./images/app-icon@192w.png",
