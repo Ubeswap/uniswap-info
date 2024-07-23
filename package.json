@@ -87,9 +87,9 @@
   "scripts": {
     "codegen:local": "graphql-codegen",
     "pull-schema": "graphql-codegen -c codegen-schema.yml",
-    "build": "graphql-codegen && REACT_APP_SENTRY_DSN=$SENTRY_DSN craco build",
-    "build:local": "graphql-codegen && craco build",
-    "start": "craco start",
+    "build": "graphql-codegen && NODE_OPTIONS=--openssl-legacy-provider REACT_APP_SENTRY_DSN=$SENTRY_DSN craco build",
+    "build:local": "graphql-codegen && NODE_OPTIONS=--openssl-legacy-provider craco build",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider craco start",
     "test": "craco test",
     "lint": "eslint './**/*.{ts,tsx,js,jsx}'",
     "lint:fix": "eslint './**/*.{ts,tsx,js,jsx}' --fix",
@@ -123,5 +123,6 @@
   "lint-staged": {
     "*.{js,ts,tsx}": "eslint --cache --fix",
     "*.{html,md,graphql,json,yaml,yml}": "prettier --write"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
