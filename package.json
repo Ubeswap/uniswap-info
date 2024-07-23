@@ -87,7 +87,7 @@
   "scripts": {
     "codegen:local": "graphql-codegen",
     "pull-schema": "graphql-codegen -c codegen-schema.yml",
-    "build": "graphql-codegen && REACT_APP_SENTRY_DSN=$SENTRY_DSN craco build",
+    "build": "graphql-codegen && craco build",
     "build:local": "graphql-codegen && craco build",
     "start": "NODE_OPTIONS=--openssl-legacy-provider craco start",
     "test": "craco test",
